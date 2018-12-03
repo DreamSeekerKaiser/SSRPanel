@@ -72,6 +72,9 @@
                                             <p>
                                                 <a href="{{$activeUserUrl}}" target="_blank">{{$activeUserUrl}}</a>
                                             </p>
+                                            <p>
+                                            <h2>如果连接不可用请直接使用此激活码:{{$activeUserToken}}}</h2>
+                                            </p>
                                         </div>
                                     </th>
                                     <th class="expander" style="Margin:0;color:#333;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:19px;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0"></th>
