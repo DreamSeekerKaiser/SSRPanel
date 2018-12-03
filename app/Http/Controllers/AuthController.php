@@ -343,7 +343,7 @@ class AuthController extends Controller
 
                     try {
                         Mail::to($username)->send(new activeUser($activeUserUrl));
-                        Helpers::addEmailLog($username, '注册激活', '请求地址：' . $activeUserUrl);
+                        Helpers::addEmailLog($username, '注册激活', '请求地址：' . $activeUserUrl,$token);
                     } catch (\Exception $e) {
                         Helpers::addEmailLog($username, '注册激活', '请求地址：' . $activeUserUrl, 0, $e->getMessage());
                     }
