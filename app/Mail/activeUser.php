@@ -13,19 +13,15 @@ class activeUser extends Mailable
 
     protected $activeUserUrl;
 
-    protected $activeUserToken;
-
-    public function __construct($activeUserUrl, $activeUserToken)
+    public function __construct($activeUserUrl)
     {
         $this->activeUserUrl = $activeUserUrl;
-        $this->activeUserToken = $activeUserToken;
     }
 
     public function build()
     {
         return $this->view('emails.activeUser')->subject('激活账号')->with([
-            'activeUserUrl' => $this->activeUserUrl,
-            'activeToken' => $this->activeUserToken
+            'activeUserUrl' => $this->activeUserUrl
         ]);
     }
 }

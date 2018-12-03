@@ -343,7 +343,7 @@ class AuthController extends Controller
 
                     try {
                         Mail::to($username)->send(new activeUser($activeUserUrl));
-                        Helpers::addEmailLog($username, '注册激活', '请求地址：' . $activeUserUrl,$token);
+                        Helpers::addEmailLog($username, '注册激活', '请求地址：' . $activeUserUrl);
                     } catch (\Exception $e) {
                         Helpers::addEmailLog($username, '注册激活', '请求地址：' . $activeUserUrl, 0, $e->getMessage());
                     }
@@ -575,7 +575,7 @@ class AuthController extends Controller
             $content = '请求地址：' . $activeUserUrl;
 
             try {
-                Mail::to($username)->send(new activeUser(self::$systemConfig['website_name'], $activeUserUrl,$token));
+                Mail::to($username)->send(new activeUser(self::$systemConfig['website_name'], $activeUserUrl));
                 Helpers::addEmailLog($username, $title, $content);
             } catch (\Exception $e) {
                 Helpers::addEmailLog($username, $title, $content, 0, $e->getMessage());
