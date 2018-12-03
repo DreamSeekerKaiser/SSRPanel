@@ -552,7 +552,6 @@ class AuthController extends Controller
             // 24小时内激活次数限制
             $activeTimes = 0;
             if (Cache::has('activeUser_' . md5($username))) {
-                Cache::forget('activeUser_' . md5($username));
                 $activeTimes = Cache::get('activeUser_' . md5($username));
                 if ($activeTimes >= self::$systemConfig['active_times']) {
                     Session::flash('errorMsg', '同一个账号24小时内只能请求激活' . self::$systemConfig['active_times'] . '次，请勿频繁操作');
