@@ -16,7 +16,7 @@ class nodeCrashWarning extends Mailable
 
     public function __construct($nodeName, $nodeServer)
     {
-        $this->nodeName = $nodeName;
+        $this->nodeName   = $nodeName;
         $this->nodeServer = $nodeServer;
     }
 

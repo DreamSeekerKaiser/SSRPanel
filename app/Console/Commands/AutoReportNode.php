@@ -42,7 +42,7 @@ class AutoReportNode extends Command
             }
         }
 
-        $jobEndTime = microtime(true);
+        $jobEndTime  = microtime(true);
         $jobUsedTime = round(($jobEndTime - $jobStartTime), 4);
 
         Log::info('执行定时任务【' . $this->description . '】，耗时' . $jobUsedTime . '秒');
@@ -51,7 +51,7 @@ class AutoReportNode extends Command
     /**
      * 通过ServerChan发微信消息提醒管理员
      *
-     * @param string $title   消息标题
+     * @param string $title 消息标题
      * @param string $content 消息内容
      *
      * @throws \GuzzleHttp\Exception\GuzzleException

@@ -11,7 +11,7 @@ class SetLocale
      * 变更语言
      *
      * @param  \Illuminate\Http\Request $request
-     * @param  \Closure                 $next
+     * @param  \Closure $next
      *
      * @return mixed
      */

@@ -55,9 +55,9 @@ class YzyController extends Controller
         }
 
         // 判断消息是否合法
-        $msg = $data['msg'];
+        $msg         = $data['msg'];
         $sign_string = self::$systemConfig['youzan_client_id'] . "" . $msg . "" . self::$systemConfig['youzan_client_secret'];
-        $sign = md5($sign_string);
+        $sign        = md5($sign_string);
         if ($sign != $data['sign']) {
             Log::info('本地签名：' . $sign_string . ' | 远程签名：' . $data['sign']);
             Log::info('YZY-POST:回调数据签名错误，可能是非法请求[' . getClientIp() . ']');
@@ -136,24 +136,24 @@ class YzyController extends Controller
                 // 生成一个可用端口
                 $port = self::$systemConfig['is_rand_port'] ? Helpers::getRandPort() : Helpers::getOnlyPort();
 
-                $user = new User();
-                $user->username = '自动生成-' . $payment->order->email;
-                $user->password = Hash::make(makeRandStr());
-                $user->port = $port;
-                $user->passwd = makeRandStr();
-                $user->vmess_id = createGuid();
-                $user->enable = 1;
-                $user->method = Helpers::getDefaultMethod();
-                $user->protocol = Helpers::getDefaultProtocol();
-                $user->obfs = Helpers::getDefaultObfs();
-                $user->usage = 1;
-                $user->transfer_enable = 1; // 新创建的账号给1，防止定时任务执行时发现u + d >= transfer_enable被判为流量超限而封禁
-                $user->enable_time = date('Y-m-d');
-                $user->expire_time = date('Y-m-d', strtotime("+" . $payment->order->goods->days . " days"));
-                $user->reg_ip = getClientIp();
-                $user->referral_uid = 0;
+                $user                    = new User();
+                $user->username          = '自动生成-' . $payment->order->email;
+                $user->password          = Hash::make(makeRandStr());
+                $user->port              = $port;
+                $user->passwd            = makeRandStr();
+                $user->vmess_id          = createGuid();
+                $user->enable            = 1;
+                $user->method            = Helpers::getDefaultMethod();
+                $user->protocol          = Helpers::getDefaultProtocol();
+                $user->obfs              = Helpers::getDefaultObfs();
+                $user->usage             = 1;
+                $user->transfer_enable   = 1; // 新创建的账号给1，防止定时任务执行时发现u + d >= transfer_enable被判为流量超限而封禁
+                $user->enable_time       = date('Y-m-d');
+                $user->expire_time       = date('Y-m-d', strtotime("+" . $payment->order->goods->days . " days"));
+                $user->reg_ip            = getClientIp();
+                $user->referral_uid      = 0;
                 $user->traffic_reset_day = 0;
-                $user->status = 1;
+                $user->status            = 1;
                 $user->save();
 
                 if ($user->id) {
@@ -163,11 +163,11 @@ class YzyController extends Controller
 
             // 更新支付单
             $payment->pay_way = $msg['full_order_info']['order_info']['pay_type_str'] == 'WEIXIN_DAIXIAO' ? 1 : 2; // 1-微信、2-支付宝
-            $payment->status = 1;
+            $payment->status  = 1;
             $payment->save();
 
             // 更新订单
-            $order = Order::query()->with(['user'])->where('oid', $payment->oid)->first();
+            $order         = Order::query()->with(['user'])->where('oid', $payment->oid)->first();
             $order->status = 2;
             $order->save();
 
@@ -243,7 +243,7 @@ class YzyController extends Controller
                     }
 
                     // 取出现有的标签
-                    $userLabels = UserLabel::query()->where('user_id', $order->user_id)->pluck('label_id')->toArray();
+                    $userLabels  = UserLabel::query()->where('user_id', $order->user_id)->pluck('label_id')->toArray();
                     $goodsLabels = GoodsLabel::query()->where('goods_id', $order->goods_id)->pluck('label_id')->toArray();
 
                     // 标签去重
@@ -254,8 +254,8 @@ class YzyController extends Controller
 
                     // 生成标签
                     foreach ($newUserLabels as $vo) {
-                        $obj = new UserLabel();
-                        $obj->user_id = $order->user_id;
+                        $obj           = new UserLabel();
+                        $obj->user_id  = $order->user_id;
                         $obj->label_id = $vo;
                         $obj->save();
                     }
@@ -277,7 +277,7 @@ class YzyController extends Controller
 
             // 自动提号机：如果order的email值不为空
             if ($order->email) {
-                $title = '自动发送账号信息';
+                $title   = '自动发送账号信息';
                 $content = [
                     'order_sn'      => $order->order_sn,
                     'goods_name'    => $order->goods->name,
@@ -294,9 +294,9 @@ class YzyController extends Controller
                 ];
 
                 // 获取可用节点列表
-                $labels = UserLabel::query()->where('user_id', $order->user_id)->get()->pluck('label_id');
-                $nodeIds = SsNodeLabel::query()->whereIn('label_id', $labels)->get()->pluck('node_id');
-                $nodeList = SsNode::query()->whereIn('id', $nodeIds)->orderBy('sort', 'desc')->orderBy('id', 'desc')->get()->toArray();
+                $labels                = UserLabel::query()->where('user_id', $order->user_id)->get()->pluck('label_id');
+                $nodeIds               = SsNodeLabel::query()->whereIn('label_id', $labels)->get()->pluck('node_id');
+                $nodeList              = SsNode::query()->whereIn('id', $nodeIds)->orderBy('sort', 'desc')->orderBy('id', 'desc')->get()->toArray();
                 $content['serverList'] = $nodeList;
 
                 try {
@@ -376,19 +376,19 @@ class YzyController extends Controller
     // 写入回调请求日志
     private function callbackLog($client_id, $yz_id, $kdt_id, $kdt_name, $mode, $msg, $sendCount, $sign, $status, $test, $type, $version)
     {
-        $obj = new PaymentCallback();
+        $obj            = new PaymentCallback();
         $obj->client_id = $client_id;
-        $obj->yz_id = $yz_id;
-        $obj->kdt_id = $kdt_id;
-        $obj->kdt_name = $kdt_name;
-        $obj->mode = $mode;
-        $obj->msg = urldecode($msg);
+        $obj->yz_id     = $yz_id;
+        $obj->kdt_id    = $kdt_id;
+        $obj->kdt_name  = $kdt_name;
+        $obj->mode      = $mode;
+        $obj->msg       = urldecode($msg);
         $obj->sendCount = $sendCount;
-        $obj->sign = $sign;
-        $obj->status = $status;
-        $obj->test = $test;
-        $obj->type = $type;
-        $obj->version = $version;
+        $obj->sign      = $sign;
+        $obj->status    = $status;
+        $obj->test      = $test;
+        $obj->type      = $type;
+        $obj->version   = $version;
         $obj->save();
 
         return $obj->id;

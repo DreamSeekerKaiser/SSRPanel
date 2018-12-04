@@ -12,7 +12,7 @@ class Namesilo
 
     function __construct()
     {
-        self::$host = 'https://www.namesilo.com/api/';
+        self::$host         = 'https://www.namesilo.com/api/';
         self::$systemConfig = Helpers::systemConfig();
     }
 
@@ -79,7 +79,7 @@ class Namesilo
             'type'    => 'xml',
             'key'     => self::$systemConfig['namesilo_key']
         ];
-        $query = array_merge($params, $data);
+        $query  = array_merge($params, $data);
 
         $content = '请求操作：[' . $operation . '] --- 请求数据：[' . http_build_query($query) . ']';
 

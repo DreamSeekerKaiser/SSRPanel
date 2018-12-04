@@ -125,12 +125,12 @@ return [
     | 注意：仅在自建邮局且PHP5.6+时使用
     |--------------------------------------------------------------------------
     */
-//    'stream'   => [
-//        'ssl' => [
-//            'verify_peer'       => false,
-//            'verify_peer_name'  => false,
-//            'allow_self_signed' => false,
-//        ],
-//    ],
+    //    'stream'   => [
+    //        'ssl' => [
+    //            'verify_peer'       => false,
+    //            'verify_peer_name'  => false,
+    //            'allow_self_signed' => false,
+    //        ],
+    //    ],
 
 ];

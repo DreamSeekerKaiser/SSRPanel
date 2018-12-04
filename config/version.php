@@ -2,5 +2,5 @@
 
 return [
     'number' => '450',
-    'name'   => 'Standard'
+    'name' => 'Standard'
 ];

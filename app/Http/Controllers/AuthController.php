@@ -46,7 +46,7 @@ class AuthController extends Controller
         if ($request->method() == 'POST') {
             $username = trim($request->get('username'));
             $password = trim($request->get('password'));
-            $captcha = trim($request->get('captcha'));
+            $captcha  = trim($request->get('captcha'));
             $remember = trim($request->get('remember'));
 
             if (empty($username) || empty($password)) {
@@ -82,7 +82,7 @@ class AuthController extends Controller
             if (self::$systemConfig['login_add_score']) {
                 if (!Cache::has('loginAddScore_' . md5($username))) {
                     $score = mt_rand(self::$systemConfig['min_rand_score'], self::$systemConfig['max_rand_score']);
-                    $ret = User::query()->where('id', Auth::user()->id)->increment('score', $score);
+                    $ret   = User::query()->where('id', Auth::user()->id)->increment('score', $score);
                     if ($ret) {
                         $this->addUserScoreLog(Auth::user()->id, Auth::user()->score, Auth::user()->score + $score, $score, '登录送积分');
 
@@ -136,14 +136,14 @@ class AuthController extends Controller
         $cacheKey = 'register_times_' . md5(getClientIp()); // 注册限制缓存key
 
         if ($request->method() == 'POST') {
-            $username = trim($request->get('username'));
-            $password = trim($request->get('password'));
-            $repassword = trim($request->get('repassword'));
-            $captcha = trim($request->get('captcha'));
-            $code = trim($request->get('code'));
-            $verify_code = trim($request->get('verify_code'));
+            $username       = trim($request->get('username'));
+            $password       = trim($request->get('password'));
+            $repassword     = trim($request->get('repassword'));
+            $captcha        = trim($request->get('captcha'));
+            $code           = trim($request->get('code'));
+            $verify_code    = trim($request->get('verify_code'));
             $register_token = $request->get('register_token');
-            $aff = intval($request->get('aff', 0));
+            $aff            = intval($request->get('aff', 0));
 
             // 防止重复提交
             $session_register_token = Session::get('register_token');
@@ -267,26 +267,26 @@ class AuthController extends Controller
             }
 
             // 获取aff
-            $affArr = $this->getAff($code, $aff);
+            $affArr       = $this->getAff($code, $aff);
             $referral_uid = $affArr['referral_uid'];
 
             $transfer_enable = $referral_uid ? (self::$systemConfig['default_traffic'] + self::$systemConfig['referral_traffic']) * 1048576 : self::$systemConfig['default_traffic'] * 1048576;
 
             // 创建新用户
-            $user = new User();
-            $user->username = $username;
-            $user->password = Hash::make($password);
-            $user->port = $port;
-            $user->passwd = makeRandStr();
-            $user->vmess_id = createGuid();
+            $user                  = new User();
+            $user->username        = $username;
+            $user->password        = Hash::make($password);
+            $user->port            = $port;
+            $user->passwd          = makeRandStr();
+            $user->vmess_id        = createGuid();
             $user->transfer_enable = $transfer_enable;
-            $user->method = Helpers::getDefaultMethod();
-            $user->protocol = Helpers::getDefaultProtocol();
-            $user->obfs = Helpers::getDefaultObfs();
-            $user->enable_time = date('Y-m-d H:i:s');
-            $user->expire_time = date('Y-m-d H:i:s', strtotime("+" . self::$systemConfig['default_days'] . " days"));
-            $user->reg_ip = getClientIp();
-            $user->referral_uid = $referral_uid;
+            $user->method          = Helpers::getDefaultMethod();
+            $user->protocol        = Helpers::getDefaultProtocol();
+            $user->obfs            = Helpers::getDefaultObfs();
+            $user->enable_time     = date('Y-m-d H:i:s');
+            $user->expire_time     = date('Y-m-d H:i:s', strtotime("+" . self::$systemConfig['default_days'] . " days"));
+            $user->reg_ip          = getClientIp();
+            $user->referral_uid    = $referral_uid;
             $user->save();
 
             // 注册失败，抛出异常
@@ -307,8 +307,8 @@ class AuthController extends Controller
             if (strlen(self::$systemConfig['initial_labels_for_user'])) {
                 $labels = explode(',', self::$systemConfig['initial_labels_for_user']);
                 foreach ($labels as $label) {
-                    $userLabel = new UserLabel();
-                    $userLabel->user_id = $user->id;
+                    $userLabel           = new UserLabel();
+                    $userLabel->user_id  = $user->id;
                     $userLabel->label_id = $label;
                     $userLabel->save();
                 }
@@ -337,7 +337,7 @@ class AuthController extends Controller
                 // 发送激活邮件
                 if (self::$systemConfig['is_active_register']) {
                     // 生成激活账号的地址
-                    $token = md5(self::$systemConfig['website_name'] . $username . microtime());
+                    $token         = md5(self::$systemConfig['website_name'] . $username . microtime());
                     $activeUserUrl = self::$systemConfig['website_url'] . '/active/' . $token;
                     $this->addVerify($user->id, $token);
 
@@ -412,18 +412,18 @@ class AuthController extends Controller
             }
 
             // 生成取回密码的地址
-            $token = md5(self::$systemConfig['website_name'] . $username . microtime());
-            $verify = new Verify();
-            $verify->type = 1;
+            $token           = md5(self::$systemConfig['website_name'] . $username . microtime());
+            $verify          = new Verify();
+            $verify->type    = 1;
             $verify->user_id = $user->id;
-            $verify->token = $token;
-            $verify->status = 0;
+            $verify->token   = $token;
+            $verify->status  = 0;
             $verify->save();
 
             // 发送邮件
             $resetPasswordUrl = self::$systemConfig['website_url'] . '/reset/' . $token;
-            $title = '重置密码';
-            $content = '请求地址：' . $resetPasswordUrl;
+            $title            = '重置密码';
+            $content          = '请求地址：' . $resetPasswordUrl;
 
             try {
                 Mail::to($username)->send(new resetPassword($resetPasswordUrl));
@@ -445,7 +445,7 @@ class AuthController extends Controller
     public function reset(Request $request, $token)
     {
         if ($request->method() == 'POST') {
-            $password = trim($request->get('password'));
+            $password   = trim($request->get('password'));
             $repassword = trim($request->get('repassword'));
 
             if (empty($token)) {
@@ -561,18 +561,18 @@ class AuthController extends Controller
             }
 
             // 生成激活账号的地址
-            $token = md5(self::$systemConfig['website_name'] . $username . microtime());
-            $verify = new Verify();
-            $verify->type = 1;
+            $token           = md5(self::$systemConfig['website_name'] . $username . microtime());
+            $verify          = new Verify();
+            $verify->type    = 1;
             $verify->user_id = $user->id;
-            $verify->token = $token;
-            $verify->status = 0;
+            $verify->token   = $token;
+            $verify->status  = 0;
             $verify->save();
 
             // 发送邮件
             $activeUserUrl = self::$systemConfig['website_url'] . '/active/' . $token;
-            $title = '重新激活账号';
-            $content = '请求地址：' . $activeUserUrl;
+            $title         = '重新激活账号';
+            $content       = '请求地址：' . $activeUserUrl;
 
             try {
                 Mail::to($username)->send(new activeUser(self::$systemConfig['website_name'], $activeUserUrl));
@@ -677,8 +677,8 @@ class AuthController extends Controller
         }
 
         // 发送邮件
-        $code = makeRandStr(6, true);
-        $title = '发送注册验证码';
+        $code    = makeRandStr(6, true);
+        $title   = '发送注册验证码';
         $content = '验证码：' . $code;
 
         try {
@@ -715,12 +715,12 @@ class AuthController extends Controller
      * 添加用户登录日志
      *
      * @param string $userId 用户ID
-     * @param string $ip     IP地址
+     * @param string $ip IP地址
      */
     private function addUserLoginLog($userId, $ip)
     {
         // 解析IP信息
-        $qqwry = new QQWry();
+        $qqwry  = new QQWry();
         $ipInfo = $qqwry->ip($ip);
         if (isset($ipInfo['error'])) {
             Log::info('无法识别IP，可能是IPv6，尝试解析：' . $ip);
@@ -731,15 +731,15 @@ class AuthController extends Controller
             Log::warning("获取IP地址信息异常：" . $ip);
         }
 
-        $log = new UserLoginLog();
-        $log->user_id = $userId;
-        $log->ip = $ip;
-        $log->country = $ipInfo['country'] ?? '';
+        $log           = new UserLoginLog();
+        $log->user_id  = $userId;
+        $log->ip       = $ip;
+        $log->country  = $ipInfo['country'] ?? '';
         $log->province = $ipInfo['province'] ?? '';
-        $log->city = $ipInfo['city'] ?? '';
-        $log->county = $ipInfo['county'] ?? '';
-        $log->isp = $ipInfo['isp'] ?? ($ipInfo['organization'] ?? '');
-        $log->area = $ipInfo['area'] ?? '';
+        $log->city     = $ipInfo['city'] ?? '';
+        $log->county   = $ipInfo['county'] ?? '';
+        $log->isp      = $ipInfo['isp'] ?? ($ipInfo['organization'] ?? '');
+        $log->area     = $ipInfo['area'] ?? '';
         $log->save();
     }
 
@@ -747,7 +747,7 @@ class AuthController extends Controller
      * 获取AFF
      *
      * @param string $code 邀请码
-     * @param string $aff  URL中的aff参数
+     * @param string $aff URL中的aff参数
      *
      * @return array
      */
@@ -764,7 +764,7 @@ class AuthController extends Controller
             $inviteCode = Invite::query()->where('code', $code)->where('status', 0)->first();
             if ($inviteCode) {
                 $referral_uid = $inviteCode->uid;
-                $code_id = $inviteCode->id;
+                $code_id      = $inviteCode->id;
             }
         }
 
@@ -773,10 +773,10 @@ class AuthController extends Controller
             // 检查一下cookie里有没有aff
             $cookieAff = \Request::hasCookie('register_aff') ? \Request::cookie('register_aff') : 0;
             if ($cookieAff) {
-                $affUser = User::query()->where('id', $cookieAff)->exists();
+                $affUser      = User::query()->where('id', $cookieAff)->exists();
                 $referral_uid = $affUser ? $cookieAff : 0;
             } elseif ($aff) { // 如果cookie里没有aff，就再检查一下请求的url里有没有aff，因为有些人的浏览器会禁用了cookie，比如chrome开了隐私模式
-                $affUser = User::query()->where('id', $aff)->exists();
+                $affUser      = User::query()->where('id', $aff)->exists();
                 $referral_uid = $affUser ? $aff : 0;
             }
         }
@@ -790,21 +790,21 @@ class AuthController extends Controller
     // 写入生成激活账号验证记录
     private function addVerify($userId, $token)
     {
-        $verify = new Verify();
-        $verify->type = 1;
+        $verify          = new Verify();
+        $verify->type    = 1;
         $verify->user_id = $userId;
-        $verify->token = $token;
-        $verify->status = 0;
+        $verify->token   = $token;
+        $verify->status  = 0;
         $verify->save();
     }
 
     // 生成注册验证码
     private function addVerifyCode($username, $code)
     {
-        $verify = new VerifyCode();
+        $verify           = new VerifyCode();
         $verify->username = $username;
-        $verify->code = $code;
-        $verify->status = 0;
+        $verify->code     = $code;
+        $verify->status   = 0;
         $verify->save();
     }
 }

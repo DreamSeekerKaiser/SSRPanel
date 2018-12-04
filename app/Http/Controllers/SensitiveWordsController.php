@@ -31,9 +31,9 @@ class SensitiveWordsController extends Controller
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '添加失败：敏感词已存在']);
         }
 
-        $obj = new SensitiveWords();
+        $obj        = new SensitiveWords();
         $obj->words = trim(strtolower($request->input('words')));
-        $result = $obj->save();
+        $result     = $obj->save();
         if ($result) {
             return Response::json(['status' => 'success', 'data' => '', 'message' => '添加成功']);
         } else {

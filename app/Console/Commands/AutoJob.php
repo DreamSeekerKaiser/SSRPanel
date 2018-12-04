@@ -73,7 +73,7 @@ class AutoJob extends Command
         // 关闭超时未支付订单
         $this->closeOrders();
 
-        $jobEndTime = microtime(true);
+        $jobEndTime  = microtime(true);
         $jobUsedTime = round(($jobEndTime - $jobStartTime), 4);
 
         Log::info('执行定时任务【' . $this->description . '】，耗时' . $jobUsedTime . '秒');
@@ -285,7 +285,7 @@ class AutoJob extends Command
                     continue;
                 }
 
-                $yzy = new yzy();
+                $yzy   = new yzy();
                 $trade = $yzy->getTradeByQrId($payment->qr_id);
                 if ($trade['response']['total_results']) {
                     // 再判断一遍当前要操作的订单的状态是否被改变了（可能请求延迟的时候已经回调处理完了）
@@ -302,24 +302,24 @@ class AutoJob extends Command
                             // 生成一个可用端口
                             $port = self::$systemConfig['is_rand_port'] ? Helpers::getRandPort() : Helpers::getOnlyPort();
 
-                            $user = new User();
-                            $user->username = '自动生成-' . $payment->order->email;
-                            $user->password = md5(makeRandStr());
-                            $user->port = $port;
-                            $user->passwd = makeRandStr();
-                            $user->vmess_id = createGuid();
-                            $user->enable = 1;
-                            $user->method = Helpers::getDefaultMethod();
-                            $user->protocol = Helpers::getDefaultProtocol();
-                            $user->obfs = Helpers::getDefaultObfs();
-                            $user->usage = 1;
-                            $user->transfer_enable = 1; // 新创建的账号给1，防止定时任务执行时发现u + d >= transfer_enable被判为流量超限而封禁
-                            $user->enable_time = date('Y-m-d');
-                            $user->expire_time = date('Y-m-d', strtotime("+" . $payment->order->goods->days . " days"));
-                            $user->reg_ip = getClientIp();
-                            $user->referral_uid = 0;
+                            $user                    = new User();
+                            $user->username          = '自动生成-' . $payment->order->email;
+                            $user->password          = md5(makeRandStr());
+                            $user->port              = $port;
+                            $user->passwd            = makeRandStr();
+                            $user->vmess_id          = createGuid();
+                            $user->enable            = 1;
+                            $user->method            = Helpers::getDefaultMethod();
+                            $user->protocol          = Helpers::getDefaultProtocol();
+                            $user->obfs              = Helpers::getDefaultObfs();
+                            $user->usage             = 1;
+                            $user->transfer_enable   = 1; // 新创建的账号给1，防止定时任务执行时发现u + d >= transfer_enable被判为流量超限而封禁
+                            $user->enable_time       = date('Y-m-d');
+                            $user->expire_time       = date('Y-m-d', strtotime("+" . $payment->order->goods->days . " days"));
+                            $user->reg_ip            = getClientIp();
+                            $user->referral_uid      = 0;
                             $user->traffic_reset_day = 0;
-                            $user->status = 1;
+                            $user->status            = 1;
                             $user->save();
 
                             if ($user->id) {
@@ -329,11 +329,11 @@ class AutoJob extends Command
 
                         // 更新支付单
                         $payment->pay_way = $trade['response']['qr_trades']['pay_type'] == 'WXPAY_BIGUNSIGN' ? 1 : 2; // 1-微信、2-支付宝
-                        $payment->status = 1;
+                        $payment->status  = 1;
                         $payment->save();
 
                         // 更新订单
-                        $order = Order::query()->with(['user'])->where('oid', $payment->oid)->first();
+                        $order         = Order::query()->with(['user'])->where('oid', $payment->oid)->first();
                         $order->status = 2;
                         $order->save();
 
@@ -405,7 +405,7 @@ class AutoJob extends Command
                                 }
 
                                 // 取出现有的标签
-                                $userLabels = UserLabel::query()->where('user_id', $order->user_id)->pluck('label_id')->toArray();
+                                $userLabels  = UserLabel::query()->where('user_id', $order->user_id)->pluck('label_id')->toArray();
                                 $goodsLabels = GoodsLabel::query()->where('goods_id', $order->goods_id)->pluck('label_id')->toArray();
 
                                 // 标签去重
@@ -416,8 +416,8 @@ class AutoJob extends Command
 
                                 // 生成标签
                                 foreach ($newUserLabels as $vo) {
-                                    $obj = new UserLabel();
-                                    $obj->user_id = $order->user_id;
+                                    $obj           = new UserLabel();
+                                    $obj->user_id  = $order->user_id;
                                     $obj->label_id = $vo;
                                     $obj->save();
                                 }
@@ -440,7 +440,7 @@ class AutoJob extends Command
 
                         // 自动提号机：如果order的email值不为空
                         if ($order->email) {
-                            $title = '【' . self::$systemConfig['website_name'] . '】您的账号信息';
+                            $title   = '【' . self::$systemConfig['website_name'] . '】您的账号信息';
                             $content = [
                                 'order_sn'      => $order->order_sn,
                                 'goods_name'    => $order->goods->name,
@@ -457,9 +457,9 @@ class AutoJob extends Command
                             ];
 
                             // 获取可用节点列表
-                            $labels = UserLabel::query()->where('user_id', $order->user_id)->get()->pluck('label_id');
-                            $nodeIds = SsNodeLabel::query()->whereIn('label_id', $labels)->get()->pluck('node_id');
-                            $nodeList = SsNode::query()->whereIn('id', $nodeIds)->orderBy('sort', 'desc')->orderBy('id', 'desc')->get()->toArray();
+                            $labels                = UserLabel::query()->where('user_id', $order->user_id)->get()->pluck('label_id');
+                            $nodeIds               = SsNodeLabel::query()->whereIn('label_id', $labels)->get()->pluck('node_id');
+                            $nodeList              = SsNode::query()->whereIn('id', $nodeIds)->orderBy('sort', 'desc')->orderBy('id', 'desc')->get()->toArray();
                             $content['serverList'] = $nodeList;
 
                             try {
@@ -516,39 +516,39 @@ class AutoJob extends Command
     /**
      * 添加用户封禁日志
      *
-     * @param int    $userId  用户ID
-     * @param int    $minutes 封禁时长，单位分钟
-     * @param string $desc    封禁理由
+     * @param int $userId 用户ID
+     * @param int $minutes 封禁时长，单位分钟
+     * @param string $desc 封禁理由
      */
     private function addUserBanLog($userId, $minutes, $desc)
     {
-        $log = new UserBanLog();
+        $log          = new UserBanLog();
         $log->user_id = $userId;
         $log->minutes = $minutes;
-        $log->desc = $desc;
+        $log->desc    = $desc;
         $log->save();
     }
 
     /**
      * 添加返利日志
      *
-     * @param int $userId    用户ID
+     * @param int $userId 用户ID
      * @param int $refUserId 返利用户ID
-     * @param int $oid       订单ID
-     * @param int $amount    发生金额
+     * @param int $oid 订单ID
+     * @param int $amount 发生金额
      * @param int $refAmount 返利金额
      *
      * @return int
      */
     public function addReferralLog($userId, $refUserId, $oid, $amount, $refAmount)
     {
-        $log = new ReferralLog();
-        $log->user_id = $userId;
+        $log              = new ReferralLog();
+        $log->user_id     = $userId;
         $log->ref_user_id = $refUserId;
-        $log->order_id = $oid;
-        $log->amount = $amount;
-        $log->ref_amount = $refAmount;
-        $log->status = 0;
+        $log->order_id    = $oid;
+        $log->amount      = $amount;
+        $log->ref_amount  = $refAmount;
+        $log->status      = 0;
 
         return $log->save();
     }
@@ -556,24 +556,24 @@ class AutoJob extends Command
     /**
      * 记录余额操作日志
      *
-     * @param int    $userId 用户ID
-     * @param string $oid    订单ID
-     * @param int    $before 记录前余额
-     * @param int    $after  记录后余额
-     * @param int    $amount 发生金额
-     * @param string $desc   描述
+     * @param int $userId 用户ID
+     * @param string $oid 订单ID
+     * @param int $before 记录前余额
+     * @param int $after 记录后余额
+     * @param int $amount 发生金额
+     * @param string $desc 描述
      *
      * @return int
      */
     public function addUserBalanceLog($userId, $oid, $before, $after, $amount, $desc = '')
     {
-        $log = new UserBalanceLog();
-        $log->user_id = $userId;
-        $log->order_id = $oid;
-        $log->before = $before;
-        $log->after = $after;
-        $log->amount = $amount;
-        $log->desc = $desc;
+        $log             = new UserBalanceLog();
+        $log->user_id    = $userId;
+        $log->order_id   = $oid;
+        $log->before     = $before;
+        $log->after      = $after;
+        $log->amount     = $amount;
+        $log->desc       = $desc;
         $log->created_at = date('Y-m-d H:i:s');
 
         return $log->save();

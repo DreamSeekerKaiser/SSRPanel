@@ -37,7 +37,7 @@ class AutoCheckNodeStatus extends Command
             }
         }
 
-        $jobEndTime = microtime(true);
+        $jobEndTime  = microtime(true);
         $jobUsedTime = round(($jobEndTime - $jobStartTime), 4);
 
         Log::info('执行定时任务【' . $this->description . '】，耗时' . $jobUsedTime . '秒');
@@ -141,9 +141,9 @@ class AutoCheckNodeStatus extends Command
     /**
      * 通知管理员
      *
-     * @param string $title      消息标题
-     * @param string $content    消息内容
-     * @param string $nodeName   节点名称
+     * @param string $title 消息标题
+     * @param string $content 消息内容
+     * @param string $nodeName 节点名称
      * @param string $nodeServer 节点域名
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -157,9 +157,9 @@ class AutoCheckNodeStatus extends Command
     /**
      * 发邮件通知管理员
      *
-     * @param string $title      消息标题
-     * @param string $content    消息内容
-     * @param string $nodeName   节点名称
+     * @param string $title 消息标题
+     * @param string $content 消息内容
+     * @param string $nodeName 节点名称
      * @param string $nodeServer 节点域名
      */
     private function notifyMasterByEmail($title, $content, $nodeName, $nodeServer)
@@ -177,7 +177,7 @@ class AutoCheckNodeStatus extends Command
     /**
      * 通过ServerChan发微信消息提醒管理员
      *
-     * @param string $title   消息标题
+     * @param string $title 消息标题
      * @param string $content 消息内容
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -193,8 +193,8 @@ class AutoCheckNodeStatus extends Command
     /**
      * 发起一个CURL请求
      *
-     * @param string $url  请求地址
-     * @param array  $data POST数据，留空则为GET
+     * @param string $url 请求地址
+     * @param array $data POST数据，留空则为GET
      *
      * @return mixed
      */

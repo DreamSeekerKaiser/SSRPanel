@@ -11,7 +11,7 @@ class isLogin
      * 校验是否已登录
      *
      * @param  \Illuminate\Http\Request $request
-     * @param  \Closure                 $next
+     * @param  \Closure $next
      *
      * @return mixed
      */

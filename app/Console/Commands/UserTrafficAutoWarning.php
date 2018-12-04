@@ -30,7 +30,7 @@ class UserTrafficAutoWarning extends Command
             $this->userTrafficWarning();
         }
 
-        $jobEndTime = microtime(true);
+        $jobEndTime  = microtime(true);
         $jobUsedTime = round(($jobEndTime - $jobStartTime), 4);
 
         Log::info('执行定时任务【' . $this->description . '】，耗时' . $jobUsedTime . '秒');
@@ -48,7 +48,7 @@ class UserTrafficAutoWarning extends Command
 
             $usedPercent = round(($user->d + $user->u) / $user->transfer_enable, 2) * 100; // 已使用流量百分比
             if ($usedPercent >= self::$systemConfig['traffic_warning_percent']) {
-                $title = '流量提醒';
+                $title   = '流量提醒';
                 $content = '流量已使用：' . $usedPercent . '%，请保持关注。';
 
                 try {

@@ -17,11 +17,11 @@ class PingController extends Controller
 {
     public function ping(Request $request)
     {
-        $token = $request->input('token');
-        $host = $request->input('host');
-        $port = $request->input('port', 22);
+        $token     = $request->input('token');
+        $host      = $request->input('host');
+        $port      = $request->input('port', 22);
         $transport = $request->input('transport', 'tcp');
-        $timeout = $request->input('timeout', 0.5);
+        $timeout   = $request->input('timeout', 0.5);
 
         if (empty($host)) {
             echo "<pre>";
@@ -59,13 +59,13 @@ class PingController extends Controller
 
         try {
             $host = gethostbyname($host); // 这里如果挂了，说明服务器的DNS解析不给力，必须换
-            $fp = stream_socket_client($transport . '://' . $host . ':' . $port, $errno, $errstr, $timeout);
+            $fp   = stream_socket_client($transport . '://' . $host . ':' . $port, $errno, $errstr, $timeout);
             if (!$fp) {
                 Log::info("$errstr ($errno)");
-                $ret = 0;
+                $ret     = 0;
                 $message = 'port close';
             } else {
-                $ret = 1;
+                $ret     = 1;
                 $message = 'port open';
             }
 

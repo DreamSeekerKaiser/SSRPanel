@@ -31,7 +31,7 @@ class UserExpireAutoWarning extends Command
             $this->userExpireWarning();
         }
 
-        $jobEndTime = microtime(true);
+        $jobEndTime  = microtime(true);
         $jobUsedTime = round(($jobEndTime - $jobStartTime), 4);
 
         Log::info('执行定时任务【' . $this->description . '】，耗时' . $jobUsedTime . '秒');
@@ -50,7 +50,7 @@ class UserExpireAutoWarning extends Command
             // 计算剩余可用时间
             $lastCanUseDays = ceil(round(strtotime($user->expire_time) - strtotime(date('Y-m-d H:i:s'))) / 3600 / 24);
             if ($lastCanUseDays == 0) {
-                $title = '账号过期提醒';
+                $title   = '账号过期提醒';
                 $content = '您的账号将于今天晚上【24:00】过期。';
 
                 try {
@@ -60,7 +60,7 @@ class UserExpireAutoWarning extends Command
                     Helpers::addEmailLog($user->username, $title, $content, 0, $e->getMessage());
                 }
             } elseif ($lastCanUseDays > 0 && $lastCanUseDays <= self::$systemConfig['expire_days']) {
-                $title = '账号过期提醒';
+                $title   = '账号过期提醒';
                 $content = '您的账号还剩' . $lastCanUseDays . '天即将过期。';
 
                 try {

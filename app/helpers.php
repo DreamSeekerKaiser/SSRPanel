@@ -94,8 +94,8 @@ if (!function_exists('formatBytes')) {
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
         $bytes = max($bytes, 0);
-        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-        $pow = min($pow, count($units) - 1);
+        $pow   = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow   = min($pow, count($units) - 1);
         $bytes /= pow(1024, $pow);
 
         return round($bytes, $precision) . ' ' . $units[$pow];
@@ -114,7 +114,7 @@ if (!function_exists('getClientIP')) {
         if (isset($_SERVER)) {
             if (isset($_SERVER['HTTP_CF_CONNECTING_IP'])) {
                 $_SERVER['REMOTE_ADDR'] = $_SERVER['HTTP_CF_CONNECTING_IP'];
-                $ip = $_SERVER['REMOTE_ADDR'];
+                $ip                     = $_SERVER['REMOTE_ADDR'];
             } elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
                 $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
             } elseif (isset($_SERVER['HTTP_CLIENT_ip'])) {
@@ -197,7 +197,7 @@ if (!function_exists('createGuid')) {
         mt_srand((double)microtime() * 10000);
         $charid = strtoupper(md5(uniqid(rand(), true)));
         $hyphen = chr(45);
-        $uuid = substr($charid, 0, 8) . $hyphen
+        $uuid   = substr($charid, 0, 8) . $hyphen
             . substr($charid, 8, 4) . $hyphen
             . substr($charid, 12, 4) . $hyphen
             . substr($charid, 16, 4) . $hyphen

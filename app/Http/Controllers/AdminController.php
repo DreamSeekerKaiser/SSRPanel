@@ -62,17 +62,17 @@ class AdminController extends Controller
     {
         $past = strtotime(date('Y-m-d', strtotime("-" . self::$systemConfig['expire_days'] . " days")));
 
-        $view['expireDays'] = self::$systemConfig['expire_days'];
-        $view['totalUserCount'] = User::query()->count(); // 总用户数
-        $view['enableUserCount'] = User::query()->where('enable', 1)->count(); // 有效用户数
-        $view['activeUserCount'] = User::query()->where('t', '>=', $past)->count(); // 活跃用户数
-        $view['unActiveUserCount'] = User::query()->where('t', '<=', $past)->where('enable', 1)->where('t', '>', 0)->count(); // 不活跃用户数
-        $view['onlineUserCount'] = User::query()->where('t', '>=', time() - 600)->count(); // 10分钟内在线用户数
+        $view['expireDays']             = self::$systemConfig['expire_days'];
+        $view['totalUserCount']         = User::query()->count(); // 总用户数
+        $view['enableUserCount']        = User::query()->where('enable', 1)->count(); // 有效用户数
+        $view['activeUserCount']        = User::query()->where('t', '>=', $past)->count(); // 活跃用户数
+        $view['unActiveUserCount']      = User::query()->where('t', '<=', $past)->where('enable', 1)->where('t', '>', 0)->count(); // 不活跃用户数
+        $view['onlineUserCount']        = User::query()->where('t', '>=', time() - 600)->count(); // 10分钟内在线用户数
         $view['expireWarningUserCount'] = User::query()->where('expire_time', '>=', date('Y-m-d', strtotime("now")))->where('expire_time', '<=', date('Y-m-d', strtotime("+" . self::$systemConfig['expire_days'] . " days")))->count(); // 临近过期用户数
-        $view['largeTrafficUserCount'] = User::query()->whereRaw('(u + d) >= 107374182400')->whereIn('status', [0, 1])->count(); // 流量超过100G的用户
+        $view['largeTrafficUserCount']  = User::query()->whereRaw('(u + d) >= 107374182400')->whereIn('status', [0, 1])->count(); // 流量超过100G的用户
 
         // 1小时内流量异常用户
-        $tempUsers = [];
+        $tempUsers            = [];
         $userTotalTrafficList = UserTrafficHourly::query()->where('node_id', 0)->where('total', '>', 104857600)->where('created_at', '>=', date('Y-m-d H:i:s', time() - 3900))->groupBy('user_id')->selectRaw("user_id, sum(total) as totalTraffic")->get(); // 只统计100M以上的记录，加快速度
         if (!$userTotalTrafficList->isEmpty()) {
             foreach ($userTotalTrafficList as $vo) {
@@ -84,22 +84,22 @@ class AdminController extends Controller
         $view['flowAbnormalUserCount'] = User::query()->whereIn('id', $tempUsers)->count();
 
 
-        $view['nodeCount'] = SsNode::query()->count();
+        $view['nodeCount']         = SsNode::query()->count();
         $view['unnormalNodeCount'] = SsNode::query()->where('status', 0)->count();
 
-        $flowCount = SsNodeTrafficDaily::query()->where('created_at', '>=', date('Y-m-d 00:00:00', strtotime("-30 days")))->sum('total');
-        $view['flowCount'] = flowAutoShow($flowCount);
-        $totalFlowCount = SsNodeTrafficDaily::query()->sum('total');
+        $flowCount              = SsNodeTrafficDaily::query()->where('created_at', '>=', date('Y-m-d 00:00:00', strtotime("-30 days")))->sum('total');
+        $view['flowCount']      = flowAutoShow($flowCount);
+        $totalFlowCount         = SsNodeTrafficDaily::query()->sum('total');
         $view['totalFlowCount'] = flowAutoShow($totalFlowCount);
 
-        $view['totalBalance'] = User::query()->sum('balance') / 100;
+        $view['totalBalance']       = User::query()->sum('balance') / 100;
         $view['totalWaitRefAmount'] = ReferralLog::query()->whereIn('status', [0, 1])->sum('ref_amount') / 100;
-        $view['totalRefAmount'] = ReferralApply::query()->where('status', 2)->sum('amount') / 100;
+        $view['totalRefAmount']     = ReferralApply::query()->where('status', 2)->sum('amount') / 100;
 
-        $view['totalOrder'] = Order::query()->count();
+        $view['totalOrder']          = Order::query()->count();
         $view['totalOnlinePayOrder'] = Order::query()->where('pay_way', 2)->count();
-        $view['totalSuccessOrder'] = Order::query()->where('status', 2)->count();
-        $view['todaySuccessOrder'] = Order::query()->where('status', 2)->where('created_at', '>=', date('Y-m-d 00:00:00'))->where('created_at', '<=', date('Y-m-d 23:59:59'))->count();
+        $view['totalSuccessOrder']   = Order::query()->where('status', 2)->count();
+        $view['todaySuccessOrder']   = Order::query()->where('status', 2)->where('created_at', '>=', date('Y-m-d 00:00:00'))->where('created_at', '<=', date('Y-m-d 23:59:59'))->count();
 
         return Response::view('admin.index', $view);
     }
@@ -107,18 +107,18 @@ class AdminController extends Controller
     // 用户列表
     public function userList(Request $request)
     {
-        $username = $request->get('username');
-        $wechat = $request->get('wechat');
-        $qq = $request->get('qq');
-        $port = $request->get('port');
-        $pay_way = $request->get('pay_way');
-        $status = $request->get('status');
-        $enable = $request->get('enable');
-        $online = $request->get('online');
-        $unActive = $request->get('unActive');
-        $flowAbnormal = $request->get('flowAbnormal');
+        $username      = $request->get('username');
+        $wechat        = $request->get('wechat');
+        $qq            = $request->get('qq');
+        $port          = $request->get('port');
+        $pay_way       = $request->get('pay_way');
+        $status        = $request->get('status');
+        $enable        = $request->get('enable');
+        $online        = $request->get('online');
+        $unActive      = $request->get('unActive');
+        $flowAbnormal  = $request->get('flowAbnormal');
         $expireWarning = $request->get('expireWarning');
-        $largeTraffic = $request->get('largeTraffic');
+        $largeTraffic  = $request->get('largeTraffic');
 
         $query = User::query();
         if (!empty($username)) {
@@ -171,7 +171,7 @@ class AdminController extends Controller
 
         // 1小时内流量异常用户
         if ($flowAbnormal) {
-            $tempUsers = [];
+            $tempUsers            = [];
             $userTotalTrafficList = UserTrafficHourly::query()->where('node_id', 0)->where('total', '>', 104857600)->where('created_at', '>=', date('Y-m-d H:i:s', time() - 3900))->groupBy('user_id')->selectRaw("user_id, sum(total) as totalTraffic")->get(); // 只统计100M以上的记录，加快速度
             if (!$userTotalTrafficList->isEmpty()) {
                 foreach ($userTotalTrafficList as $vo) {
@@ -186,7 +186,7 @@ class AdminController extends Controller
         $userList = $query->orderBy('id', 'desc')->paginate(15)->appends($request->except('page'));
         foreach ($userList as &$user) {
             $user->transfer_enable = flowAutoShow($user->transfer_enable);
-            $user->used_flow = flowAutoShow($user->u + $user->d);
+            $user->used_flow       = flowAutoShow($user->u + $user->d);
             if ($user->expire_time < date('Y-m-d', strtotime("now"))) {
                 $user->expireWarning = -1; // 已过期
             } elseif ($user->expire_time == date('Y-m-d', strtotime("now"))) {
@@ -198,8 +198,8 @@ class AdminController extends Controller
             }
 
             // 流量异常警告
-            $time = date('Y-m-d H:i:s', time() - 3900);
-            $totalTraffic = UserTrafficHourly::query()->where('user_id', $user->id)->where('node_id', 0)->where('created_at', '>=', $time)->sum('total');
+            $time                 = date('Y-m-d H:i:s', time() - 3900);
+            $totalTraffic         = UserTrafficHourly::query()->where('user_id', $user->id)->where('node_id', 0)->where('created_at', '>=', $time)->sum('total');
             $user->trafficWarning = $totalTraffic > (self::$systemConfig['traffic_ban_value'] * 1024 * 1024 * 1024) ? 1 : 0;
         }
 
@@ -222,35 +222,35 @@ class AdminController extends Controller
                 return Response::json(['status' => 'fail', 'data' => '', 'message' => '请至少选择一种用途']);
             }
 
-            $user = new User();
-            $user->username = trim($request->get('username'));
-            $user->password = trim($request->get('password')) ? Hash::make(trim($request->get('password'))) : Hash::make(makeRandStr());
-            $user->port = $request->get('port');
-            $user->passwd = empty($request->get('passwd')) ? makeRandStr() : $request->get('passwd');
-            $user->vmess_id = trim($request->get('vmess_id', createGuid()));
-            $user->transfer_enable = toGB($request->get('transfer_enable', 0));
-            $user->enable = intval($request->get('enable', 0));
-            $user->method = $request->get('method');
-            $user->protocol = $request->get('protocol');
-            $user->protocol_param = $request->get('protocol_param') ? $request->get('protocol_param') : '';
-            $user->obfs = $request->get('obfs');
-            $user->obfs_param = $request->get('obfs_param') ? $request->get('obfs_param') : '';
-            $user->gender = $request->get('gender');
-            $user->wechat = $request->get('wechat') ? $request->get('wechat') : '';
-            $user->qq = $request->get('qq') ? $request->get('qq') : '';
-            $user->usage = $request->get('usage');
-            $user->pay_way = $request->get('pay_way');
-            $user->balance = 0;
-            $user->score = 0;
-            $user->enable_time = empty($request->get('enable_time')) ? date('Y-m-d') : $request->get('enable_time');
-            $user->expire_time = empty($request->get('expire_time')) ? date('Y-m-d', strtotime("+365 days")) : $request->get('expire_time');
-            $user->remark = str_replace("eval", "", str_replace("atob", "", $request->get('remark')));
-            $user->level = $request->get('level') ? $request->get('level') : 1;
-            $user->is_admin = 0;
-            $user->reg_ip = getClientIp();
-            $user->referral_uid = 0;
+            $user                    = new User();
+            $user->username          = trim($request->get('username'));
+            $user->password          = trim($request->get('password')) ? Hash::make(trim($request->get('password'))) : Hash::make(makeRandStr());
+            $user->port              = $request->get('port');
+            $user->passwd            = empty($request->get('passwd')) ? makeRandStr() : $request->get('passwd');
+            $user->vmess_id          = trim($request->get('vmess_id', createGuid()));
+            $user->transfer_enable   = toGB($request->get('transfer_enable', 0));
+            $user->enable            = intval($request->get('enable', 0));
+            $user->method            = $request->get('method');
+            $user->protocol          = $request->get('protocol');
+            $user->protocol_param    = $request->get('protocol_param') ? $request->get('protocol_param') : '';
+            $user->obfs              = $request->get('obfs');
+            $user->obfs_param        = $request->get('obfs_param') ? $request->get('obfs_param') : '';
+            $user->gender            = $request->get('gender');
+            $user->wechat            = $request->get('wechat') ? $request->get('wechat') : '';
+            $user->qq                = $request->get('qq') ? $request->get('qq') : '';
+            $user->usage             = $request->get('usage');
+            $user->pay_way           = $request->get('pay_way');
+            $user->balance           = 0;
+            $user->score             = 0;
+            $user->enable_time       = empty($request->get('enable_time')) ? date('Y-m-d') : $request->get('enable_time');
+            $user->expire_time       = empty($request->get('expire_time')) ? date('Y-m-d', strtotime("+365 days")) : $request->get('expire_time');
+            $user->remark            = str_replace("eval", "", str_replace("atob", "", $request->get('remark')));
+            $user->level             = $request->get('level') ? $request->get('level') : 1;
+            $user->is_admin          = 0;
+            $user->reg_ip            = getClientIp();
+            $user->referral_uid      = 0;
             $user->traffic_reset_day = 0;
-            $user->status = $request->get('status') ? $request->get('status') : 1;
+            $user->status            = $request->get('status') ? $request->get('status') : 1;
             $user->save();
 
             if ($user->id) {
@@ -266,12 +266,12 @@ class AdminController extends Controller
             }
         } else {
             // 生成一个可用端口
-            $view['last_port'] = self::$systemConfig['is_rand_port'] ? Helpers::getRandPort() : Helpers::getOnlyPort();
-            $view['method_list'] = Helpers::methodList();
+            $view['last_port']     = self::$systemConfig['is_rand_port'] ? Helpers::getRandPort() : Helpers::getOnlyPort();
+            $view['method_list']   = Helpers::methodList();
             $view['protocol_list'] = Helpers::protocolList();
-            $view['obfs_list'] = Helpers::obfsList();
-            $view['level_list'] = Helpers::levelList();
-            $view['label_list'] = Label::query()->orderBy('sort', 'desc')->orderBy('id', 'asc')->get();
+            $view['obfs_list']     = Helpers::obfsList();
+            $view['level_list']    = Helpers::levelList();
+            $view['label_list']    = Label::query()->orderBy('sort', 'desc')->orderBy('id', 'asc')->get();
 
             return Response::view('admin.addUser', $view);
         }
@@ -286,27 +286,27 @@ class AdminController extends Controller
                 // 生成一个可用端口
                 $port = self::$systemConfig['is_rand_port'] ? Helpers::getRandPort() : Helpers::getOnlyPort();
 
-                $user = new User();
-                $user->username = '批量生成-' . makeRandStr();
-                $user->password = Hash::make(makeRandStr());
-                $user->port = $port;
-                $user->passwd = makeRandStr();
-                $user->vmess_id = createGuid();
-                $user->enable = 1;
-                $user->method = Helpers::getDefaultMethod();
-                $user->protocol = Helpers::getDefaultProtocol();
-                $user->protocol_param = '';
-                $user->obfs = Helpers::getDefaultObfs();
-                $user->obfs_param = '';
-                $user->usage = 4;
-                $user->transfer_enable = toGB(1000);
-                $user->enable_time = date('Y-m-d');
-                $user->expire_time = date('Y-m-d', strtotime("+365 days"));
-                $user->remark = '';
-                $user->reg_ip = getClientIp();
-                $user->referral_uid = 0;
+                $user                    = new User();
+                $user->username          = '批量生成-' . makeRandStr();
+                $user->password          = Hash::make(makeRandStr());
+                $user->port              = $port;
+                $user->passwd            = makeRandStr();
+                $user->vmess_id          = createGuid();
+                $user->enable            = 1;
+                $user->method            = Helpers::getDefaultMethod();
+                $user->protocol          = Helpers::getDefaultProtocol();
+                $user->protocol_param    = '';
+                $user->obfs              = Helpers::getDefaultObfs();
+                $user->obfs_param        = '';
+                $user->usage             = 4;
+                $user->transfer_enable   = toGB(1000);
+                $user->enable_time       = date('Y-m-d');
+                $user->expire_time       = date('Y-m-d', strtotime("+365 days"));
+                $user->remark            = '';
+                $user->reg_ip            = getClientIp();
+                $user->referral_uid      = 0;
                 $user->traffic_reset_day = 0;
-                $user->status = 1;
+                $user->status            = 1;
                 $user->save();
 
                 // 初始化默认标签
@@ -335,32 +335,32 @@ class AdminController extends Controller
         $id = intval($request->get('id'));
 
         if ($request->method() == 'POST') {
-            $username = trim($request->get('username'));
-            $password = $request->get('password');
-            $port = intval($request->get('port'));
-            $passwd = $request->get('passwd');
-            $vmess_id = $request->get('vmess_id') ? $request->get('vmess_id') : createGuid();
-            $transfer_enable = $request->get('transfer_enable');
-            $enable = intval($request->get('enable'));
-            $method = $request->get('method');
-            $protocol = $request->get('protocol');
-            $protocol_param = $request->get('protocol_param');
-            $obfs = $request->get('obfs');
-            $obfs_param = $request->get('obfs_param');
-            $speed_limit_per_con = $request->get('speed_limit_per_con');
+            $username             = trim($request->get('username'));
+            $password             = $request->get('password');
+            $port                 = intval($request->get('port'));
+            $passwd               = $request->get('passwd');
+            $vmess_id             = $request->get('vmess_id') ? $request->get('vmess_id') : createGuid();
+            $transfer_enable      = $request->get('transfer_enable');
+            $enable               = intval($request->get('enable'));
+            $method               = $request->get('method');
+            $protocol             = $request->get('protocol');
+            $protocol_param       = $request->get('protocol_param');
+            $obfs                 = $request->get('obfs');
+            $obfs_param           = $request->get('obfs_param');
+            $speed_limit_per_con  = $request->get('speed_limit_per_con');
             $speed_limit_per_user = $request->get('speed_limit_per_user');
-            $gender = $request->get('gender');
-            $wechat = $request->get('wechat');
-            $qq = $request->get('qq');
-            $usage = $request->get('usage');
-            $pay_way = $request->get('pay_way');
-            $status = $request->get('status');
-            $labels = $request->get('labels', []);
-            $enable_time = $request->get('enable_time');
-            $expire_time = $request->get('expire_time');
-            $remark = str_replace("eval", "", str_replace("atob", "", $request->get('remark')));
-            $level = $request->get('level');
-            $is_admin = $request->get('is_admin');
+            $gender               = $request->get('gender');
+            $wechat               = $request->get('wechat');
+            $qq                   = $request->get('qq');
+            $usage                = $request->get('usage');
+            $pay_way              = $request->get('pay_way');
+            $status               = $request->get('status');
+            $labels               = $request->get('labels', []);
+            $enable_time          = $request->get('enable_time');
+            $expire_time          = $request->get('expire_time');
+            $remark               = str_replace("eval", "", str_replace("atob", "", $request->get('remark')));
+            $level                = $request->get('level');
+            $is_admin             = $request->get('is_admin');
 
             // 校验username是否已存在
             $exists = User::query()->where('id', '<>', $id)->where('username', $username)->first();
@@ -458,12 +458,12 @@ class AdminController extends Controller
                 $user->usage = explode(',', $user->usage);
             }
 
-            $view['user'] = $user;
-            $view['method_list'] = Helpers::methodList();
+            $view['user']          = $user;
+            $view['method_list']   = Helpers::methodList();
             $view['protocol_list'] = Helpers::protocolList();
-            $view['obfs_list'] = Helpers::obfsList();
-            $view['level_list'] = Helpers::levelList();
-            $view['label_list'] = Label::query()->orderBy('sort', 'desc')->orderBy('id', 'asc')->get();
+            $view['obfs_list']     = Helpers::obfsList();
+            $view['level_list']    = Helpers::levelList();
+            $view['label_list']    = Label::query()->orderBy('sort', 'desc')->orderBy('id', 'asc')->get();
 
             return Response::view('admin.editUser', $view);
         }
@@ -500,16 +500,16 @@ class AdminController extends Controller
         $nodeList = $query->orderBy('status', 'desc')->orderBy('id', 'asc')->paginate(15)->appends($request->except('page'));
         foreach ($nodeList as &$node) {
             // 在线人数
-            $last_log_time = time() - 600; // 10分钟内
-            $online_log = SsNodeOnlineLog::query()->where('node_id', $node->id)->where('log_time', '>=', $last_log_time)->orderBy('id', 'desc')->first();
+            $last_log_time      = time() - 600; // 10分钟内
+            $online_log         = SsNodeOnlineLog::query()->where('node_id', $node->id)->where('log_time', '>=', $last_log_time)->orderBy('id', 'desc')->first();
             $node->online_users = empty($online_log) ? 0 : $online_log->online_user;
 
             // 已产生流量
-            $totalTraffic = SsNodeTrafficDaily::query()->where('node_id', $node->id)->sum('total');
+            $totalTraffic   = SsNodeTrafficDaily::query()->where('node_id', $node->id)->sum('total');
             $node->transfer = flowAutoShow($totalTraffic);
 
             // 负载（10分钟以内）
-            $node_info = SsNodeInfo::query()->where('node_id', $node->id)->where('log_time', '>=', strtotime("-10 minutes"))->orderBy('id', 'desc')->first();
+            $node_info  = SsNodeInfo::query()->where('node_id', $node->id)->where('log_time', '>=', strtotime("-10 minutes"))->orderBy('id', 'desc')->first();
             $node->load = empty($node_info) || empty($node_info->load) ? '宕机' : $node_info->load;
         }
 
@@ -535,8 +535,8 @@ class AdminController extends Controller
             }
 
             if ($request->get('server')) {
-                $domain = $request->get('server');
-                $domain = explode('.', $domain);
+                $domain       = $request->get('server');
+                $domain       = explode('.', $domain);
                 $domainSuffix = end($domain); // 取得域名后缀
 
                 if (!in_array($domainSuffix, \config('domains'))) {
@@ -548,51 +548,51 @@ class AdminController extends Controller
 
             DB::beginTransaction();
             try {
-                $ssNode = new SsNode();
-                $ssNode->type = $request->get('type');
-                $ssNode->name = $request->get('name');
-                $ssNode->group_id = $request->get('group_id') ? intval($request->get('group_id')) : 0;
-                $ssNode->country_code = $request->get('country_code') ? $request->get('country_code') : 'un';
-                $ssNode->server = $request->get('server') ? $request->get('server') : '';
-                $ssNode->ip = $request->get('ip');
-                $ssNode->ipv6 = $request->get('ipv6');
-                $ssNode->desc = $request->get('desc') ? $request->get('desc') : '';
-                $ssNode->method = $request->get('method');
-                $ssNode->protocol = $request->get('protocol');
-                $ssNode->protocol_param = $request->get('protocol_param') ? $request->get('protocol_param') : '';
-                $ssNode->obfs = $request->get('obfs') ? $request->get('obfs') : '';
-                $ssNode->obfs_param = $request->get('obfs_param') ? $request->get('obfs_param') : '';
-                $ssNode->traffic_rate = $request->get('traffic_rate') ? $request->get('traffic_rate') : 1;
-                $ssNode->bandwidth = $request->get('bandwidth');
-                $ssNode->traffic = $request->get('traffic');
-                $ssNode->monitor_url = $request->get('monitor_url') ? $request->get('monitor_url') : '';
-                $ssNode->is_subscribe = intval($request->get('is_subscribe'));
-                $ssNode->ssh_port = $request->get('ssh_port') ? intval($request->get('ssh_port')) : 22;
-                $ssNode->is_tcp_check = intval($request->get('is_tcp_check'));
-                $ssNode->compatible = intval($request->get('compatible'));
-                $ssNode->single = intval($request->get('single'));
-                $ssNode->single_force = $request->get('single') ? $request->get('single_force') : 0;
-                $ssNode->single_port = $request->get('single') ? $request->get('single_port') : '';
-                $ssNode->single_passwd = $request->get('single') ? $request->get('single_passwd') : '';
-                $ssNode->single_method = $request->get('single') ? $request->get('single_method') : '';
+                $ssNode                  = new SsNode();
+                $ssNode->type            = $request->get('type');
+                $ssNode->name            = $request->get('name');
+                $ssNode->group_id        = $request->get('group_id') ? intval($request->get('group_id')) : 0;
+                $ssNode->country_code    = $request->get('country_code') ? $request->get('country_code') : 'un';
+                $ssNode->server          = $request->get('server') ? $request->get('server') : '';
+                $ssNode->ip              = $request->get('ip');
+                $ssNode->ipv6            = $request->get('ipv6');
+                $ssNode->desc            = $request->get('desc') ? $request->get('desc') : '';
+                $ssNode->method          = $request->get('method');
+                $ssNode->protocol        = $request->get('protocol');
+                $ssNode->protocol_param  = $request->get('protocol_param') ? $request->get('protocol_param') : '';
+                $ssNode->obfs            = $request->get('obfs') ? $request->get('obfs') : '';
+                $ssNode->obfs_param      = $request->get('obfs_param') ? $request->get('obfs_param') : '';
+                $ssNode->traffic_rate    = $request->get('traffic_rate') ? $request->get('traffic_rate') : 1;
+                $ssNode->bandwidth       = $request->get('bandwidth');
+                $ssNode->traffic         = $request->get('traffic');
+                $ssNode->monitor_url     = $request->get('monitor_url') ? $request->get('monitor_url') : '';
+                $ssNode->is_subscribe    = intval($request->get('is_subscribe'));
+                $ssNode->ssh_port        = $request->get('ssh_port') ? intval($request->get('ssh_port')) : 22;
+                $ssNode->is_tcp_check    = intval($request->get('is_tcp_check'));
+                $ssNode->compatible      = intval($request->get('compatible'));
+                $ssNode->single          = intval($request->get('single'));
+                $ssNode->single_force    = $request->get('single') ? $request->get('single_force') : 0;
+                $ssNode->single_port     = $request->get('single') ? $request->get('single_port') : '';
+                $ssNode->single_passwd   = $request->get('single') ? $request->get('single_passwd') : '';
+                $ssNode->single_method   = $request->get('single') ? $request->get('single_method') : '';
                 $ssNode->single_protocol = $request->get('single') ? $request->get('single_protocol') : '';
-                $ssNode->single_obfs = $request->get('single') ? $request->get('single_obfs') : '';
-                $ssNode->sort = $request->get('sort') ? intval($request->get('sort')) : 0;
-                $ssNode->status = $request->get('status') ? intval($request->get('status')) : 1;
-                $ssNode->v2_alter_id = $request->get('v2_alter_id') ? intval($request->get('v2_alter_id')) : 16;
-                $ssNode->v2_port = $request->get('v2_port') ? intval($request->get('v2_port')) : 32000;
-                $ssNode->v2_net = $request->get('v2_net') ? $request->get('v2_net') : 'tcp';
-                $ssNode->v2_type = $request->get('v2_type') ? $request->get('v2_type') : 'none';
-                $ssNode->v2_host = $request->get('v2_host') ? $request->get('v2_host') : '';
-                $ssNode->v2_path = $request->get('v2_path') ? $request->get('v2_path') : '';
-                $ssNode->v2_tls = $request->get('v2_tls') ? intval($request->get('v2_tls')) : 0;
+                $ssNode->single_obfs     = $request->get('single') ? $request->get('single_obfs') : '';
+                $ssNode->sort            = $request->get('sort') ? intval($request->get('sort')) : 0;
+                $ssNode->status          = $request->get('status') ? intval($request->get('status')) : 1;
+                $ssNode->v2_alter_id     = $request->get('v2_alter_id') ? intval($request->get('v2_alter_id')) : 16;
+                $ssNode->v2_port         = $request->get('v2_port') ? intval($request->get('v2_port')) : 32000;
+                $ssNode->v2_net          = $request->get('v2_net') ? $request->get('v2_net') : 'tcp';
+                $ssNode->v2_type         = $request->get('v2_type') ? $request->get('v2_type') : 'none';
+                $ssNode->v2_host         = $request->get('v2_host') ? $request->get('v2_host') : '';
+                $ssNode->v2_path         = $request->get('v2_path') ? $request->get('v2_path') : '';
+                $ssNode->v2_tls          = $request->get('v2_tls') ? intval($request->get('v2_tls')) : 0;
                 $ssNode->save();
 
                 // 建立分组关联
                 if ($ssNode->id && $request->get('group_id', 0)) {
-                    $ssGroupNode = new SsGroupNode();
+                    $ssGroupNode           = new SsGroupNode();
                     $ssGroupNode->group_id = $request->get('group_id', 0);
-                    $ssGroupNode->node_id = $ssNode->id;
+                    $ssGroupNode->node_id  = $ssNode->id;
                     $ssGroupNode->save();
                 }
 
@@ -600,8 +600,8 @@ class AdminController extends Controller
                 $labels = $request->get('labels');
                 if ($ssNode->id && !empty($labels)) {
                     foreach ($labels as $label) {
-                        $ssNodeLabel = new SsNodeLabel();
-                        $ssNodeLabel->node_id = $ssNode->id;
+                        $ssNodeLabel           = new SsNodeLabel();
+                        $ssNodeLabel->node_id  = $ssNode->id;
                         $ssNodeLabel->label_id = $label;
                         $ssNodeLabel->save();
                     }
@@ -617,13 +617,13 @@ class AdminController extends Controller
                 return Response::json(['status' => 'fail', 'data' => '', 'message' => '添加失败：' . $e->getMessage()]);
             }
         } else {
-            $view['method_list'] = Helpers::methodList();
+            $view['method_list']   = Helpers::methodList();
             $view['protocol_list'] = Helpers::protocolList();
-            $view['obfs_list'] = Helpers::obfsList();
-            $view['level_list'] = Helpers::levelList();
-            $view['group_list'] = SsGroup::query()->get();
-            $view['country_list'] = Country::query()->orderBy('country_code', 'asc')->get();
-            $view['label_list'] = Label::query()->orderBy('sort', 'desc')->orderBy('id', 'asc')->get();
+            $view['obfs_list']     = Helpers::obfsList();
+            $view['level_list']    = Helpers::levelList();
+            $view['group_list']    = SsGroup::query()->get();
+            $view['country_list']  = Country::query()->orderBy('country_code', 'asc')->get();
+            $view['label_list']    = Label::query()->orderBy('sort', 'desc')->orderBy('id', 'asc')->get();
 
             return Response::view('admin.addNode', $view);
         }
@@ -648,8 +648,8 @@ class AdminController extends Controller
             }
 
             if ($request->get('server')) {
-                $domain = $request->get('server');
-                $domain = explode('.', $domain);
+                $domain       = $request->get('server');
+                $domain       = explode('.', $domain);
                 $domainSuffix = end($domain); // 取得域名后缀
 
                 if (!in_array($domainSuffix, \config('domains'))) {
@@ -711,9 +711,9 @@ class AdminController extends Controller
                     SsGroupNode::query()->where('node_id', $id)->delete();
 
                     // 建立关联
-                    $ssGroupNode = new SsGroupNode();
+                    $ssGroupNode           = new SsGroupNode();
                     $ssGroupNode->group_id = $request->get('group_id');
-                    $ssGroupNode->node_id = $id;
+                    $ssGroupNode->node_id  = $id;
                     $ssGroupNode->save();
                 }
 
@@ -724,8 +724,8 @@ class AdminController extends Controller
                     SsNodeLabel::query()->where('node_id', $id)->delete();
 
                     foreach ($labels as $label) {
-                        $ssNodeLabel = new SsNodeLabel();
-                        $ssNodeLabel->node_id = $id;
+                        $ssNodeLabel           = new SsNodeLabel();
+                        $ssNodeLabel->node_id  = $id;
                         $ssNodeLabel->label_id = $label;
                         $ssNodeLabel->save();
                     }
@@ -753,14 +753,14 @@ class AdminController extends Controller
                 $node->labels = $labels;
             }
 
-            $view['node'] = $node;
-            $view['method_list'] = Helpers::methodList();
+            $view['node']          = $node;
+            $view['method_list']   = Helpers::methodList();
             $view['protocol_list'] = Helpers::protocolList();
-            $view['obfs_list'] = Helpers::obfsList();
-            $view['level_list'] = Helpers::levelList();
-            $view['group_list'] = SsGroup::query()->get();
-            $view['country_list'] = Country::query()->orderBy('country_code', 'asc')->get();
-            $view['label_list'] = Label::query()->orderBy('sort', 'desc')->orderBy('id', 'asc')->get();
+            $view['obfs_list']     = Helpers::obfsList();
+            $view['level_list']    = Helpers::levelList();
+            $view['group_list']    = SsGroup::query()->get();
+            $view['country_list']  = Country::query()->orderBy('country_code', 'asc')->get();
+            $view['label_list']    = Label::query()->orderBy('sort', 'desc')->orderBy('id', 'asc')->get();
 
             return Response::view('admin.editNode', $view);
         }
@@ -814,13 +814,13 @@ class AdminController extends Controller
         }
 
         // 查看流量
-        $dailyData = [];
+        $dailyData  = [];
         $hourlyData = [];
 
         // 节点一个月内的流量
         $nodeTrafficDaily = SsNodeTrafficDaily::query()->with(['info'])->where('node_id', $node->id)->where('created_at', '>=', date('Y-m', time()))->orderBy('created_at', 'asc')->pluck('total')->toArray();
-        $dailyTotal = date('d', time()) - 1;//今天不算，减一
-        $dailyCount = count($nodeTrafficDaily);
+        $dailyTotal       = date('d', time()) - 1;//今天不算，减一
+        $dailyCount       = count($nodeTrafficDaily);
         for ($x = 0; $x < ($dailyTotal - $dailyCount); $x++) {
             $dailyData[$x] = 0;
         }
@@ -830,8 +830,8 @@ class AdminController extends Controller
 
         // 节点一天内的流量
         $nodeTrafficHourly = SsNodeTrafficHourly::query()->with(['info'])->where('node_id', $node->id)->where('created_at', '>=', date('Y-m-d', time()))->orderBy('created_at', 'asc')->pluck('total')->toArray();
-        $hourlyTotal = date('H', time());
-        $hourlyCount = count($nodeTrafficHourly);
+        $hourlyTotal       = date('H', time());
+        $hourlyCount       = count($nodeTrafficHourly);
         for ($x = 0; $x < ($hourlyTotal - $hourlyCount); $x++) {
             $hourlyData[$x] = 0;
         }
@@ -850,15 +850,15 @@ class AdminController extends Controller
         ];
 
         // 本月天数数据
-        $monthDays = [];
+        $monthDays    = [];
         $monthHasDays = date("t");
         for ($i = 1; $i <= $monthHasDays; $i++) {
             $monthDays[] = $i;
         }
 
-        $view['nodeName'] = $node->name;
+        $view['nodeName']   = $node->name;
         $view['nodeServer'] = $node->server;
-        $view['monthDays'] = "'" . implode("','", $monthDays) . "'";
+        $view['monthDays']  = "'" . implode("','", $monthDays) . "'";
 
         return Response::view('admin.nodeMonitor', $view);
     }
@@ -875,14 +875,14 @@ class AdminController extends Controller
     public function addArticle(Request $request)
     {
         if ($request->method() == 'POST') {
-            $article = new Article();
-            $article->title = $request->get('title');
-            $article->type = $request->get('type', 1);
-            $article->author = $request->get('author');
+            $article          = new Article();
+            $article->title   = $request->get('title');
+            $article->type    = $request->get('type', 1);
+            $article->author  = $request->get('author');
             $article->summary = $request->get('summary');
             $article->content = $request->get('content');
-            $article->is_del = 0;
-            $article->sort = $request->get('sort', 0);
+            $article->is_del  = 0;
+            $article->sort    = $request->get('sort', 0);
             $article->save();
 
             return Response::json(['status' => 'success', 'data' => '', 'message' => '添加成功']);
@@ -897,12 +897,12 @@ class AdminController extends Controller
         $id = $request->get('id');
 
         if ($request->method() == 'POST') {
-            $title = $request->get('title');
-            $type = $request->get('type');
-            $author = $request->get('author');
+            $title   = $request->get('title');
+            $type    = $request->get('type');
+            $author  = $request->get('author');
             $summary = $request->get('summary');
             $content = $request->get('content');
-            $sort = $request->get('sort');
+            $sort    = $request->get('sort');
 
             $data = [
                 'title'   => $title,
@@ -945,7 +945,7 @@ class AdminController extends Controller
         $view['groupList'] = SsGroup::query()->paginate(15)->appends($request->except('page'));
 
         $levelList = Helpers::levelList();
-        $levelMap = [];
+        $levelMap  = [];
         foreach ($levelList as $vo) {
             $levelMap[$vo['level']] = $vo['level_name'];
         }
@@ -958,8 +958,8 @@ class AdminController extends Controller
     public function addGroup(Request $request)
     {
         if ($request->method() == 'POST') {
-            $ssGroup = new SsGroup();
-            $ssGroup->name = $request->get('name');
+            $ssGroup        = new SsGroup();
+            $ssGroup->name  = $request->get('name');
             $ssGroup->level = $request->get('level');
             $ssGroup->save();
 
@@ -977,7 +977,7 @@ class AdminController extends Controller
         $id = $request->get('id');
 
         if ($request->method() == 'POST') {
-            $name = $request->get('name');
+            $name  = $request->get('name');
             $level = $request->get('level');
 
             $data = [
@@ -992,7 +992,7 @@ class AdminController extends Controller
                 return Response::json(['status' => 'fail', 'data' => '', 'message' => '编辑失败']);
             }
         } else {
-            $view['group'] = SsGroup::query()->where('id', $id)->first();
+            $view['group']     = SsGroup::query()->where('id', $id)->first();
             $view['levelList'] = Helpers::levelList();
 
             return Response::view('admin.editGroup', $view);
@@ -1021,8 +1021,8 @@ class AdminController extends Controller
     // 流量日志
     public function trafficLog(Request $request)
     {
-        $port = $request->get('port');
-        $user_id = $request->get('user_id');
+        $port     = $request->get('port');
+        $user_id  = $request->get('user_id');
         $username = $request->get('username');
 
         $query = UserTrafficLog::with(['User', 'SsNode']);
@@ -1048,8 +1048,8 @@ class AdminController extends Controller
 
         $trafficLogList = $query->orderBy('id', 'desc')->paginate(20)->appends($request->except('page'));
         foreach ($trafficLogList as &$trafficLog) {
-            $trafficLog->u = flowAutoShow($trafficLog->u);
-            $trafficLog->d = flowAutoShow($trafficLog->d);
+            $trafficLog->u        = flowAutoShow($trafficLog->u);
+            $trafficLog->d        = flowAutoShow($trafficLog->d);
             $trafficLog->log_time = date('Y-m-d H:i:s', $trafficLog->log_time);
         }
 
@@ -1061,9 +1061,9 @@ class AdminController extends Controller
     // 订阅请求日志
     public function subscribeLog(Request $request)
     {
-        $user_id = $request->get('user_id');
+        $user_id  = $request->get('user_id');
         $username = $request->get('username');
-        $status = $request->get('status');
+        $status   = $request->get('status');
 
         $query = UserSubscribe::with(['User']);
 
@@ -1089,7 +1089,7 @@ class AdminController extends Controller
     // 设置用户的订阅的状态
     public function setSubscribeStatus(Request $request)
     {
-        $id = $request->get('id');
+        $id     = $request->get('id');
         $status = $request->get('status', 0);
 
         if (empty($id)) {
@@ -1118,7 +1118,7 @@ class AdminController extends Controller
             // 反解析处理
             $content = str_replace("\n", ",", $content);
             $content = explode(',', $content);
-            $txt = '';
+            $txt     = '';
             foreach ($content as $item) {
                 // 判断是SS还是SSR链接
                 $str = '';
@@ -1144,13 +1144,13 @@ class AdminController extends Controller
     public function convert(Request $request)
     {
         if ($request->method() == 'POST') {
-            $method = $request->get('method');
+            $method          = $request->get('method');
             $transfer_enable = $request->get('transfer_enable');
-            $protocol = $request->get('protocol');
-            $protocol_param = $request->get('protocol_param');
-            $obfs = $request->get('obfs');
-            $obfs_param = $request->get('obfs_param');
-            $content = $request->get('content');
+            $protocol        = $request->get('protocol');
+            $protocol_param  = $request->get('protocol_param');
+            $obfs            = $request->get('obfs');
+            $obfs_param      = $request->get('obfs_param');
+            $content         = $request->get('content');
 
             if (empty($content)) {
                 return Response::json(['status' => 'fail', 'data' => '', 'message' => '请在左侧填入要转换的内容']);
@@ -1189,9 +1189,9 @@ class AdminController extends Controller
             return Response::json(['status' => 'success', 'data' => $json, 'message' => '转换成功']);
         } else {
             // 加密方式、协议、混淆
-            $view['method_list'] = Helpers::methodList();
+            $view['method_list']   = Helpers::methodList();
             $view['protocol_list'] = Helpers::protocolList();
-            $view['obfs_list'] = Helpers::obfsList();
+            $view['obfs_list']     = Helpers::obfsList();
 
             return Response::view('admin.convert', $view);
         }
@@ -1244,7 +1244,7 @@ class AdminController extends Controller
             }
 
             $save_path = realpath(storage_path('uploads'));
-            $new_name = md5($file->getClientOriginalExtension()) . '.json';
+            $new_name  = md5($file->getClientOriginalExtension()) . '.json';
             $file->move($save_path, $new_name);
 
             // 读取文件内容
@@ -1259,36 +1259,36 @@ class AdminController extends Controller
             DB::beginTransaction();
             try {
                 foreach ($data as $user) {
-                    $obj = new User();
-                    $obj->username = $user->user;
-                    $obj->password = Hash::make('123456');
-                    $obj->port = $user->port;
-                    $obj->passwd = $user->passwd;
-                    $obj->vmess_id = $user->vmess_id;
-                    $obj->transfer_enable = $user->transfer_enable;
-                    $obj->u = 0;
-                    $obj->d = 0;
-                    $obj->t = 0;
-                    $obj->enable = 1;
-                    $obj->method = $user->method;
-                    $obj->protocol = $user->protocol;
-                    $obj->protocol_param = $user->protocol_param;
-                    $obj->obfs = $user->obfs;
-                    $obj->obfs_param = $user->obfs_param;
-                    $obj->speed_limit_per_con = 204800;
+                    $obj                       = new User();
+                    $obj->username             = $user->user;
+                    $obj->password             = Hash::make('123456');
+                    $obj->port                 = $user->port;
+                    $obj->passwd               = $user->passwd;
+                    $obj->vmess_id             = $user->vmess_id;
+                    $obj->transfer_enable      = $user->transfer_enable;
+                    $obj->u                    = 0;
+                    $obj->d                    = 0;
+                    $obj->t                    = 0;
+                    $obj->enable               = 1;
+                    $obj->method               = $user->method;
+                    $obj->protocol             = $user->protocol;
+                    $obj->protocol_param       = $user->protocol_param;
+                    $obj->obfs                 = $user->obfs;
+                    $obj->obfs_param           = $user->obfs_param;
+                    $obj->speed_limit_per_con  = 204800;
                     $obj->speed_limit_per_user = 204800;
-                    $obj->wechat = '';
-                    $obj->qq = '';
-                    $obj->usage = 1;
-                    $obj->pay_way = 3;
-                    $obj->balance = 0;
-                    $obj->enable_time = date('Y-m-d');
-                    $obj->expire_time = '2099-01-01';
-                    $obj->remark = '';
-                    $obj->is_admin = 0;
-                    $obj->reg_ip = getClientIp();
-                    $obj->created_at = date('Y-m-d H:i:s');
-                    $obj->updated_at = date('Y-m-d H:i:s');
+                    $obj->wechat               = '';
+                    $obj->qq                   = '';
+                    $obj->usage                = 1;
+                    $obj->pay_way              = 3;
+                    $obj->balance              = 0;
+                    $obj->enable_time          = date('Y-m-d');
+                    $obj->expire_time          = '2099-01-01';
+                    $obj->remark               = '';
+                    $obj->is_admin             = 0;
+                    $obj->reg_ip               = getClientIp();
+                    $obj->created_at           = date('Y-m-d H:i:s');
+                    $obj->updated_at           = date('Y-m-d H:i:s');
                     $obj->save();
                 }
 
@@ -1330,25 +1330,25 @@ class AdminController extends Controller
 
             if ($node->type == 1) {
                 // 生成ssr scheme
-                $obfs_param = $user->obfs_param ? $user->obfs_param : $node->obfs_param;
+                $obfs_param     = $user->obfs_param ? $user->obfs_param : $node->obfs_param;
                 $protocol_param = $node->single ? $user->port . ':' . $user->passwd : $user->protocol_param;
 
-                $ssr_str = ($node->server ? $node->server : $node->ip) . ':' . ($node->single ? $node->single_port : $user->port);
-                $ssr_str .= ':' . ($node->single ? $node->single_protocol : $user->protocol) . ':' . ($node->single ? $node->single_method : $user->method);
-                $ssr_str .= ':' . ($node->single ? $node->single_obfs : $user->obfs) . ':' . ($node->single ? base64url_encode($node->single_passwd) : base64url_encode($user->passwd));
-                $ssr_str .= '/?obfsparam=' . base64url_encode($obfs_param);
-                $ssr_str .= '&protoparam=' . ($node->single ? base64url_encode($user->port . ':' . $user->passwd) : base64url_encode($protocol_param));
-                $ssr_str .= '&remarks=' . base64url_encode($node->name);
-                $ssr_str .= '&group=' . base64url_encode(empty($group) ? '' : $group->name);
-                $ssr_str .= '&udpport=0';
-                $ssr_str .= '&uot=0';
-                $ssr_str = base64url_encode($ssr_str);
+                $ssr_str    = ($node->server ? $node->server : $node->ip) . ':' . ($node->single ? $node->single_port : $user->port);
+                $ssr_str    .= ':' . ($node->single ? $node->single_protocol : $user->protocol) . ':' . ($node->single ? $node->single_method : $user->method);
+                $ssr_str    .= ':' . ($node->single ? $node->single_obfs : $user->obfs) . ':' . ($node->single ? base64url_encode($node->single_passwd) : base64url_encode($user->passwd));
+                $ssr_str    .= '/?obfsparam=' . base64url_encode($obfs_param);
+                $ssr_str    .= '&protoparam=' . ($node->single ? base64url_encode($user->port . ':' . $user->passwd) : base64url_encode($protocol_param));
+                $ssr_str    .= '&remarks=' . base64url_encode($node->name);
+                $ssr_str    .= '&group=' . base64url_encode(empty($group) ? '' : $group->name);
+                $ssr_str    .= '&udpport=0';
+                $ssr_str    .= '&uot=0';
+                $ssr_str    = base64url_encode($ssr_str);
                 $ssr_scheme = 'ssr://' . $ssr_str;
 
                 // 生成ss scheme
-                $ss_str = $user->method . ':' . $user->passwd . '@';
-                $ss_str .= ($node->server ? $node->server : $node->ip) . ':' . $user->port;
-                $ss_str = base64url_encode($ss_str) . '#' . 'VPN';
+                $ss_str    = $user->method . ':' . $user->passwd . '@';
+                $ss_str    .= ($node->server ? $node->server : $node->ip) . ':' . $user->port;
+                $ss_str    = base64url_encode($ss_str) . '#' . 'VPN';
                 $ss_scheme = 'ss://' . $ss_str;
 
                 // 生成配置信息
@@ -1366,12 +1366,12 @@ class AdminController extends Controller
                 $txt .= "混淆参数：" . ($user->obfs_param ? $user->obfs_param : $node->obfs_param) . "\r\n";
                 $txt .= "本地端口：1080\r\n";
 
-                $node->txt = $txt;
+                $node->txt        = $txt;
                 $node->ssr_scheme = $ssr_scheme;
-                $node->ss_scheme = $node->compatible ? $ss_scheme : ''; // 节点兼容原版才显示
+                $node->ss_scheme  = $node->compatible ? $ss_scheme : ''; // 节点兼容原版才显示
             } else {
                 // 生成v2ray scheme
-                $v2_json = [
+                $v2_json   = [
                     "v"    => "2",
                     "ps"   => $node->name,
                     "add"  => $node->server ? $node->server : $node->ip,
@@ -1400,13 +1400,13 @@ class AdminController extends Controller
                 $txt .= $node->v2_path ? "路径：" . $node->v2_path . "\r\n" : "";
                 $txt .= $node->v2_tls == 1 ? "TLS：tls\r\n" : "";
 
-                $node->txt = $txt;
+                $node->txt       = $txt;
                 $node->v2_scheme = $v2_scheme;
             }
         }
 
         $view['nodeList'] = $nodeList;
-        $view['user'] = $user;
+        $view['user']     = $user;
 
         return Response::view('admin.export', $view);
     }
@@ -1414,7 +1414,7 @@ class AdminController extends Controller
     // 导出原版SS用户配置信息
     public function exportSSJson(Request $request)
     {
-        $userList = User::query()->where('port', '>', 0)->get();
+        $userList      = User::query()->where('port', '>', 0)->get();
         $defaultMethod = Helpers::getDefaultMethod();
 
         $json = '';
@@ -1425,7 +1425,7 @@ class AdminController extends Controller
             }
 
             $userPassword = implode(",\n\t\t", $tmp);
-            $json = <<<EOF
+            $json         = <<<EOF
 {
 	"server":"0.0.0.0",
     "local_address":"127.0.0.1",
@@ -1499,18 +1499,18 @@ EOF;
         }
 
         // 30天内的流量
-        $trafficDaily = [];
+        $trafficDaily  = [];
         $trafficHourly = [];
-        $nodeList = SsNode::query()->where('status', 1)->orderBy('sort', 'desc')->get();
+        $nodeList      = SsNode::query()->where('status', 1)->orderBy('sort', 'desc')->get();
         foreach ($nodeList as $node) {
-            $dailyData = [];
+            $dailyData  = [];
             $hourlyData = [];
 
 
             // 节点一个月内的流量
             $userTrafficDaily = UserTrafficDaily::query()->with(['info'])->where('user_id', $user->id)->where('node_id', $node->id)->where('created_at', '>=', date('Y-m', time()))->orderBy('created_at', 'asc')->pluck('total')->toArray();
-            $dailyTotal = date('d', time()) - 1;//今天不算，减一
-            $dailyCount = count($userTrafficDaily);
+            $dailyTotal       = date('d', time()) - 1;//今天不算，减一
+            $dailyCount       = count($userTrafficDaily);
             for ($x = 0; $x < ($dailyTotal - $dailyCount); $x++) {
                 $dailyData[$x] = 0;
             }
@@ -1520,8 +1520,8 @@ EOF;
 
             // 节点一天内的流量
             $userTrafficHourly = UserTrafficHourly::query()->with(['info'])->where('user_id', $user->id)->where('node_id', $node->id)->where('created_at', '>=', date('Y-m-d', time()))->orderBy('created_at', 'asc')->pluck('total')->toArray();
-            $hourlyTotal = date('H', time());
-            $hourlyCount = count($userTrafficHourly);
+            $hourlyTotal       = date('H', time());
+            $hourlyCount       = count($userTrafficHourly);
             for ($x = 0; $x < ($hourlyTotal - $hourlyCount); $x++) {
                 $hourlyData[$x] = 0;
             }
@@ -1541,16 +1541,16 @@ EOF;
         }
 
         // 本月天数数据
-        $monthDays = [];
+        $monthDays    = [];
         $monthHasDays = date("t");
         for ($i = 1; $i <= $monthHasDays; $i++) {
             $monthDays[] = $i;
         }
 
-        $view['trafficDaily'] = $trafficDaily;
+        $view['trafficDaily']  = $trafficDaily;
         $view['trafficHourly'] = $trafficHourly;
-        $view['username'] = $user->username;
-        $view['monthDays'] = "'" . implode("','", $monthDays) . "'";
+        $view['username']      = $user->username;
+        $view['monthDays']     = "'" . implode("','", $monthDays) . "'";
 
         return Response::view('admin.userMonitor', $view);
     }
@@ -1567,10 +1567,10 @@ EOF;
     public function config(Request $request)
     {
         if ($request->method() == 'POST') {
-            $name = $request->get('name');
-            $type = $request->get('type', 1); // 类型：1-加密方式（method）、2-协议（protocol）、3-混淆（obfs）
+            $name       = $request->get('name');
+            $type       = $request->get('type', 1); // 类型：1-加密方式（method）、2-协议（protocol）、3-混淆（obfs）
             $is_default = $request->get('is_default', 0);
-            $sort = $request->get('sort', 0);
+            $sort       = $request->get('sort', 0);
 
             if (empty($name)) {
                 return Response::json(['status' => 'fail', 'data' => '', 'message' => '配置名称不能为空']);
@@ -1582,20 +1582,20 @@ EOF;
                 return Response::json(['status' => 'fail', 'data' => '', 'message' => '配置已经存在，请勿重复添加']);
             }
 
-            $ssConfig = new SsConfig();
-            $ssConfig->name = $name;
-            $ssConfig->type = $type;
+            $ssConfig             = new SsConfig();
+            $ssConfig->name       = $name;
+            $ssConfig->type       = $type;
             $ssConfig->is_default = $is_default;
-            $ssConfig->sort = $sort;
+            $ssConfig->sort       = $sort;
             $ssConfig->save();
 
             return Response::json(['status' => 'success', 'data' => '', 'message' => '添加成功']);
         } else {
-            $view['method_list'] = SsConfig::query()->where('type', 1)->get();
+            $view['method_list']   = SsConfig::query()->where('type', 1)->get();
             $view['protocol_list'] = SsConfig::query()->where('type', 2)->get();
-            $view['obfs_list'] = SsConfig::query()->where('type', 3)->get();
-            $view['level_list'] = Helpers::levelList();
-            $view['country_list'] = Country::query()->get();
+            $view['obfs_list']     = SsConfig::query()->where('type', 3)->get();
+            $view['level_list']    = Helpers::levelList();
+            $view['country_list']  = Country::query()->get();
 
             return Response::view('admin.config', $view);
         }
@@ -1640,14 +1640,14 @@ EOF;
     // 设置系统扩展信息，例如客服、统计代码
     public function setExtend(Request $request)
     {
-        $websiteAnalytics = $request->get('website_analytics');
+        $websiteAnalytics       = $request->get('website_analytics');
         $websiteCustomerService = $request->get('website_customer_service');
 
         DB::beginTransaction();
         try {
             // 首页LOGO
             if ($request->hasFile('website_home_logo')) {
-                $file = $request->file('website_home_logo');
+                $file     = $request->file('website_home_logo');
                 $fileType = $file->getClientOriginalExtension();
 
                 // 验证文件合法性
@@ -1657,8 +1657,8 @@ EOF;
                     return Redirect::back();
                 }
 
-                $logoName = date('YmdHis') . mt_rand(1000, 2000) . '.' . $fileType;
-                $move = $file->move(base_path() . '/public/upload/image/', $logoName);
+                $logoName        = date('YmdHis') . mt_rand(1000, 2000) . '.' . $fileType;
+                $move            = $file->move(base_path() . '/public/upload/image/', $logoName);
                 $websiteHomeLogo = $move ? '/upload/image/' . $logoName : '';
 
                 Config::query()->where('name', 'website_home_logo')->update(['value' => $websiteHomeLogo]);
@@ -1666,7 +1666,7 @@ EOF;
 
             // 站内LOGO
             if ($request->hasFile('website_logo')) {
-                $file = $request->file('website_logo');
+                $file     = $request->file('website_logo');
                 $fileType = $file->getClientOriginalExtension();
 
                 // 验证文件合法性
@@ -1676,8 +1676,8 @@ EOF;
                     return Redirect::back();
                 }
 
-                $logoName = date('YmdHis') . mt_rand(1000, 2000) . '.' . $fileType;
-                $move = $file->move(base_path() . '/public/upload/image/', $logoName);
+                $logoName    = date('YmdHis') . mt_rand(1000, 2000) . '.' . $fileType;
+                $move        = $file->move(base_path() . '/public/upload/image/', $logoName);
                 $websiteLogo = $move ? '/upload/image/' . $logoName : '';
 
                 Config::query()->where('name', 'website_logo')->update(['value' => $websiteLogo]);
@@ -1740,7 +1740,7 @@ EOF;
     // 添加等级
     public function addLevel(Request $request)
     {
-        $level = intval($request->get('level'));
+        $level      = intval($request->get('level'));
         $level_name = trim($request->get('level_name'));
 
         if (empty($level)) {
@@ -1756,8 +1756,8 @@ EOF;
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '该等级已存在，请勿重复添加']);
         }
 
-        $obj = new Level();
-        $obj->level = $level;
+        $obj             = new Level();
+        $obj->level      = $level;
         $obj->level_name = $level_name;
         $obj->save();
 
@@ -1771,8 +1771,8 @@ EOF;
     // 编辑等级
     public function updateLevel(Request $request)
     {
-        $id = $request->get('id');
-        $level = $request->get('level');
+        $id         = $request->get('id');
+        $level      = $request->get('level');
         $level_name = $request->get('level_name');
 
         if (!$id) {
@@ -1862,7 +1862,7 @@ EOF;
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '该国家/地区名称已存在，请勿重复添加']);
         }
 
-        $obj = new Country();
+        $obj               = new Country();
         $obj->country_name = $country_name;
         $obj->country_code = $country_code;
         $obj->save();
@@ -1877,7 +1877,7 @@ EOF;
     // 编辑国家/地区
     public function updateCountry(Request $request)
     {
-        $id = $request->get('id');
+        $id           = $request->get('id');
         $country_name = $request->get('country_name');
         $country_code = $request->get('country_code');
 
@@ -1943,7 +1943,7 @@ EOF;
     // 系统设置
     public function system(Request $request)
     {
-        $view = Helpers::systemConfig();
+        $view               = Helpers::systemConfig();
         $view['label_list'] = Label::query()->orderBy('sort', 'desc')->orderBy('id', 'asc')->get();
 
         return Response::view('admin.system', $view);
@@ -1952,7 +1952,7 @@ EOF;
     // 设置某个配置项
     public function setConfig(Request $request)
     {
-        $name = trim($request->get('name'));
+        $name  = trim($request->get('name'));
         $value = trim($request->get('value'));
 
         if ($name == '') {
@@ -2012,11 +2012,11 @@ EOF;
     public function makeInvite(Request $request)
     {
         for ($i = 0; $i < 5; $i++) {
-            $obj = new Invite();
-            $obj->uid = 0;
-            $obj->fuid = 0;
-            $obj->code = strtoupper(substr(md5(microtime() . makeRandStr()), 8, 12));
-            $obj->status = 0;
+            $obj           = new Invite();
+            $obj->uid      = 0;
+            $obj->fuid     = 0;
+            $obj->code     = strtoupper(substr(md5(microtime() . makeRandStr()), 8, 12));
+            $obj->status   = 0;
             $obj->dateline = date('Y-m-d H:i:s', strtotime("+ 7days"));
             $obj->save();
         }
@@ -2055,7 +2055,7 @@ EOF;
     public function applyList(Request $request)
     {
         $username = $request->get('username');
-        $status = $request->get('status');
+        $status   = $request->get('status');
 
         $query = ReferralApply::with('user');
         if ($username) {
@@ -2078,11 +2078,11 @@ EOF;
     {
         $id = $request->get('id');
 
-        $list = new \stdClass();
+        $list  = new \stdClass();
         $apply = ReferralApply::query()->with(['user'])->where('id', $id)->first();
         if ($apply && $apply->link_logs) {
             $link_logs = explode(',', $apply->link_logs);
-            $list = ReferralLog::query()->with(['user', 'order.goods'])->whereIn('id', $link_logs)->paginate(15);
+            $list      = ReferralLog::query()->with(['user', 'order.goods'])->whereIn('id', $link_logs)->paginate(15);
         }
 
         $view['info'] = $apply;
@@ -2094,11 +2094,11 @@ EOF;
     // 订单列表
     public function orderList(Request $request)
     {
-        $username = trim($request->get('username'));
+        $username  = trim($request->get('username'));
         $is_coupon = $request->get('is_coupon');
         $is_expire = $request->get('is_expire');
-        $pay_way = $request->get('pay_way');
-        $status = intval($request->get('status'));
+        $pay_way   = $request->get('pay_way');
+        $status    = intval($request->get('status'));
 
         $query = Order::query()->with(['user', 'goods', 'coupon'])->orderBy('oid', 'desc');
 
@@ -2136,14 +2136,14 @@ EOF;
     // 设置提现申请状态
     public function setApplyStatus(Request $request)
     {
-        $id = $request->get('id');
+        $id     = $request->get('id');
         $status = $request->get('status');
 
         $ret = ReferralApply::query()->where('id', $id)->update(['status' => $status]);
         if ($ret) {
             // 审核申请的时候将关联的
             $referralApply = ReferralApply::query()->where('id', $id)->first();
-            $log_ids = explode(',', $referralApply->link_logs);
+            $log_ids       = explode(',', $referralApply->link_logs);
             if ($referralApply && $status == 1) {
                 ReferralLog::query()->whereIn('id', $log_ids)->update(['status' => 1]);
             } elseif ($referralApply && $status == 2) {
@@ -2259,9 +2259,9 @@ EOF;
     // 用户返利流水记录
     public function userRebateList(Request $request)
     {
-        $username = trim($request->get('username'));
+        $username     = trim($request->get('username'));
         $ref_username = trim($request->get('ref_username'));
-        $status = $request->get('status');
+        $status       = $request->get('status');
 
         $query = ReferralLog::query()->with(['user', 'order'])->orderBy('id', 'desc')->orderBy('status', 'asc');
 
@@ -2324,7 +2324,7 @@ EOF;
             $name = $request->get('name');
             $sort = $request->get('sort');
 
-            $label = new Label();
+            $label       = new Label();
             $label->name = $name;
             $label->sort = $sort;
             $label->save();
@@ -2339,7 +2339,7 @@ EOF;
     public function editLabel(Request $request)
     {
         if ($request->isMethod('POST')) {
-            $id = $request->get('id');
+            $id   = $request->get('id');
             $name = $request->get('name');
             $sort = $request->get('sort');
 
@@ -2347,7 +2347,7 @@ EOF;
 
             return Response::json(['status' => 'success', 'data' => '', 'message' => '添加成功']);
         } else {
-            $id = $request->get('id');
+            $id            = $request->get('id');
             $view['label'] = Label::query()->where('id', $id)->first();
 
             return Response::view('admin.editLabel', $view);
@@ -2391,8 +2391,8 @@ EOF;
             UserLabel::query()->where('user_id', $userId)->delete();
 
             foreach ($labels as $label) {
-                $userLabel = new UserLabel();
-                $userLabel->user_id = $userId;
+                $userLabel           = new UserLabel();
+                $userLabel->user_id  = $userId;
                 $userLabel->label_id = $label;
                 $userLabel->save();
             }

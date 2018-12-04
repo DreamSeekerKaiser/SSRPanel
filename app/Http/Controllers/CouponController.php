@@ -33,14 +33,14 @@ class CouponController extends Controller
     public function addCoupon(Request $request)
     {
         if ($request->method() == 'POST') {
-            $name = $request->get('name');
-            $type = $request->get('type', 1);
-            $usage = $request->get('usage', 1);
-            $num = $request->get('num', 1);
-            $amount = $request->get('amount');
-            $discount = $request->get('discount');
+            $name            = $request->get('name');
+            $type            = $request->get('type', 1);
+            $usage           = $request->get('usage', 1);
+            $num             = $request->get('num', 1);
+            $amount          = $request->get('amount');
+            $discount        = $request->get('discount');
             $available_start = $request->get('available_start');
-            $available_end = $request->get('available_end');
+            $available_end   = $request->get('available_end');
 
             if (empty($num) || (empty($amount) && empty($discount)) || empty($available_start) || empty($available_end)) {
                 Session::flash('errorMsg', '请填写完整');
@@ -57,7 +57,7 @@ class CouponController extends Controller
             // 商品LOGO
             $logo = '';
             if ($request->hasFile('logo')) {
-                $file = $request->file('logo');
+                $file     = $request->file('logo');
                 $fileType = $file->getClientOriginalExtension();
 
                 // 验证文件合法性
@@ -68,24 +68,24 @@ class CouponController extends Controller
                 }
 
                 $logoName = date('YmdHis') . mt_rand(1000, 2000) . '.' . $fileType;
-                $move = $file->move(base_path() . '/public/upload/image/coupon/', $logoName);
-                $logo = $move ? '/upload/image/coupon/' . $logoName : '';
+                $move     = $file->move(base_path() . '/public/upload/image/coupon/', $logoName);
+                $logo     = $move ? '/upload/image/coupon/' . $logoName : '';
             }
 
             DB::beginTransaction();
             try {
                 for ($i = 0; $i < $num; $i++) {
-                    $obj = new Coupon();
-                    $obj->name = $name;
-                    $obj->sn = strtoupper(makeRandStr(7));
-                    $obj->logo = $logo;
-                    $obj->type = $type;
-                    $obj->usage = $usage;
-                    $obj->amount = empty($amount) ? 0 : $amount;
-                    $obj->discount = empty($discount) ? 0 : $discount;
+                    $obj                  = new Coupon();
+                    $obj->name            = $name;
+                    $obj->sn              = strtoupper(makeRandStr(7));
+                    $obj->logo            = $logo;
+                    $obj->type            = $type;
+                    $obj->usage           = $usage;
+                    $obj->amount          = empty($amount) ? 0 : $amount;
+                    $obj->discount        = empty($discount) ? 0 : $discount;
                     $obj->available_start = strtotime(date('Y-m-d 00:00:00', strtotime($available_start)));
-                    $obj->available_end = strtotime(date('Y-m-d 23:59:59', strtotime($available_end)));
-                    $obj->status = 0;
+                    $obj->available_end   = strtotime(date('Y-m-d 23:59:59', strtotime($available_end)));
+                    $obj->status          = 0;
                     $obj->save();
                 }
 
@@ -119,11 +119,11 @@ class CouponController extends Controller
     // 导出卡券
     public function exportCoupon(Request $request)
     {
-        $cashCouponList = Coupon::query()->where('is_del', 0)->where('status', 0)->where('type', 1)->get();
+        $cashCouponList     = Coupon::query()->where('is_del', 0)->where('status', 0)->where('type', 1)->get();
         $discountCouponList = Coupon::query()->where('is_del', 0)->where('status', 0)->where('type', 2)->get();
-        $chargeCouponList = Coupon::query()->where('is_del', 0)->where('status', 0)->where('type', 3)->get();
+        $chargeCouponList   = Coupon::query()->where('is_del', 0)->where('status', 0)->where('type', 3)->get();
 
-        $filename = '卡券' . date('Ymd') . '.xlsx';
+        $filename    = '卡券' . date('Ymd') . '.xlsx';
         $spreadsheet = new Spreadsheet();
         $spreadsheet->getProperties()->setCreator('SSRPanel')->setLastModifiedBy('SSRPanel')->setTitle('邀请码')->setSubject('邀请码')->setDescription('')->setKeywords('')->setCategory('');
 
@@ -133,7 +133,7 @@ class CouponController extends Controller
         $sheet->setTitle('抵用券');
         $sheet->fromArray(['名称', '类型', '有效期', '券码', '面额（元）'], null);
         foreach ($cashCouponList as $k => $vo) {
-            $usage = '仅限一次性使用';
+            $usage     = '仅限一次性使用';
             $dateRange = date('Y-m-d', $vo->available_start) . ' ~ ' . date('Y-m-d', $vo->available_end);
             $sheet->fromArray([$vo->name, $usage, $dateRange, $vo->sn, $vo->amount], null, 'A' . ($k + 2));
         }
@@ -145,7 +145,7 @@ class CouponController extends Controller
         $sheet->setTitle('折扣券');
         $sheet->fromArray(['名称', '类型', '有效期', '券码', '折扣（折）'], null);
         foreach ($discountCouponList as $k => $vo) {
-            $usage = $vo->usage == 1 ? '仅限一次性使用' : '可重复使用';
+            $usage     = $vo->usage == 1 ? '仅限一次性使用' : '可重复使用';
             $dateRange = date('Y-m-d', $vo->available_start) . ' ~ ' . date('Y-m-d', $vo->available_end);
             $sheet->fromArray([$vo->name, $usage, $dateRange, $vo->sn, $vo->discount], null, 'A' . ($k + 2));
         }
@@ -157,7 +157,7 @@ class CouponController extends Controller
         $sheet->setTitle('充值券');
         $sheet->fromArray(['名称', '类型', '有效期', '券码', '面额（元）'], null);
         foreach ($chargeCouponList as $k => $vo) {
-            $usage = '仅限一次性使用';
+            $usage     = '仅限一次性使用';
             $dateRange = date('Y-m-d', $vo->available_start) . ' ~ ' . date('Y-m-d', $vo->available_end);
             $sheet->fromArray([$vo->name, $usage, $dateRange, $vo->sn, $vo->amount], null, 'A' . ($k + 2));
         }

@@ -19,7 +19,7 @@ class ServerChan
     /**
      * 推送消息
      *
-     * @param string $title   消息标题
+     * @param string $title 消息标题
      * @param string $content 消息内容
      *
      * @return mixed

@@ -91,7 +91,7 @@ class SubscribeController extends Controller
             // 获取分组名称
             $group = SsGroup::query()->where('id', $node['group_id'])->first();
 
-            $obfs_param = $user->obfs_param ? $user->obfs_param : $node['obfs_param'];
+            $obfs_param     = $user->obfs_param ? $user->obfs_param : $node['obfs_param'];
             $protocol_param = $node['single'] ? $user->port . ':' . $user->passwd : $user->protocol_param;
 
             // 生成ssr scheme
@@ -105,7 +105,7 @@ class SubscribeController extends Controller
             $ssr_str .= '&udpport=0';
             $ssr_str .= '&uot=0';
             $ssr_str = base64url_encode($ssr_str);
-            $scheme .= 'ssr://' . $ssr_str . "\n";
+            $scheme  .= 'ssr://' . $ssr_str . "\n";
         }
 
         exit(base64url_encode($scheme));
@@ -114,10 +114,10 @@ class SubscribeController extends Controller
     // 写入订阅访问日志
     private function log($subscribeId, $ip, $headers)
     {
-        $log = new UserSubscribeLog();
-        $log->sid = $subscribeId;
-        $log->request_ip = $ip;
-        $log->request_time = date('Y-m-d H:i:s');
+        $log                 = new UserSubscribeLog();
+        $log->sid            = $subscribeId;
+        $log->request_ip     = $ip;
+        $log->request_time   = date('Y-m-d H:i:s');
         $log->request_header = $headers;
         $log->save();
     }

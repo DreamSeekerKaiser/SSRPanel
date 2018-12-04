@@ -64,10 +64,10 @@ class LoginController extends Controller
             if (!$subscribe) {
                 $code = $this->makeSubscribeCode();
 
-                $subscribe = new UserSubscribe();
+                $subscribe          = new UserSubscribe();
                 $subscribe->user_id = $user->id;
-                $subscribe->code = $code;
-                $subscribe->times = 0;
+                $subscribe->code    = $code;
+                $subscribe->times   = 0;
                 $subscribe->save();
             } else {
                 $code = $subscribe->code;
@@ -99,10 +99,10 @@ class LoginController extends Controller
     // 写入订阅访问日志
     private function log($subscribeId, $ip, $headers)
     {
-        $log = new UserSubscribeLog();
-        $log->sid = $subscribeId;
-        $log->request_ip = $ip;
-        $log->request_time = date('Y-m-d H:i:s');
+        $log                 = new UserSubscribeLog();
+        $log->sid            = $subscribeId;
+        $log->request_ip     = $ip;
+        $log->request_time   = date('Y-m-d H:i:s');
         $log->request_header = $headers;
         $log->save();
     }

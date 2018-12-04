@@ -16,7 +16,7 @@ class newTicket extends Mailable
 
     public function __construct($title, $content)
     {
-        $this->title = $title;
+        $this->title   = $title;
         $this->content = $content;
     }
 

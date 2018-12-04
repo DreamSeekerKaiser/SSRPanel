@@ -11,7 +11,7 @@ class Affiliate
      * 返利识别
      *
      * @param  \Illuminate\Http\Request $request
-     * @param  \Closure                 $next
+     * @param  \Closure $next
      *
      * @return mixed
      */

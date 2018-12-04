@@ -47,21 +47,21 @@ class TicketController extends Controller
             $content = str_replace("eval", "", str_replace("atob", "", $content));
             $content = substr($content, 0, 300);
 
-            $obj = new TicketReply();
-            $obj->ticket_id = $id;
-            $obj->user_id = Auth::user()->id;
-            $obj->content = $content;
+            $obj             = new TicketReply();
+            $obj->ticket_id  = $id;
+            $obj->user_id    = Auth::user()->id;
+            $obj->content    = $content;
             $obj->created_at = date('Y-m-d H:i:s');
             $obj->save();
 
             if ($obj->id) {
                 // 将工单置为已回复
-                $ticket = Ticket::query()->with(['user'])->where('id', $id)->first();
+                $ticket         = Ticket::query()->with(['user'])->where('id', $id)->first();
                 $ticket->status = 1;
                 $ticket->save();
 
 
-                $title = "工单回复提醒";
+                $title   = "工单回复提醒";
                 $content = "标题：" . $ticket->title . "<br>管理员回复：" . $content;
 
                 // 发通知邮件
@@ -94,7 +94,7 @@ class TicketController extends Controller
                 return Response::json(['status' => 'fail', 'data' => '', 'message' => '回复失败']);
             }
         } else {
-            $view['ticket'] = Ticket::query()->where('id', $id)->with('user')->first();
+            $view['ticket']    = Ticket::query()->where('id', $id)->with('user')->first();
             $view['replyList'] = TicketReply::query()->where('ticket_id', $id)->with('user')->orderBy('id', 'asc')->get();
 
             return Response::view('ticket.replyTicket', $view);
@@ -112,12 +112,12 @@ class TicketController extends Controller
         }
 
         $ticket->status = 2;
-        $ret = $ticket->save();
+        $ret            = $ticket->save();
         if (!$ret) {
             return Response::json(['status' => 'fail', 'data' => '', 'message' => '关闭失败']);
         }
 
-        $title = "工单关闭提醒";
+        $title   = "工单关闭提醒";
         $content = "工单【" . $ticket->title . "】已关闭";
 
         // 发邮件通知用户

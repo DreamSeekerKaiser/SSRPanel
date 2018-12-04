@@ -14,7 +14,7 @@ class isForbidden
      * 限制机器人、指定IP访问
      *
      * @param  \Illuminate\Http\Request $request
-     * @param  \Closure                 $next
+     * @param  \Closure $next
      *
      * @return mixed
      */
@@ -30,8 +30,8 @@ class isForbidden
         }
 
         $isIPv6 = false;
-        $ip = getClientIP();
-        $qqWry = new QQWry();
+        $ip     = getClientIP();
+        $qqWry  = new QQWry();
         $ipInfo = $qqWry->ip($ip);
         if (isset($ipInfo['error'])) {
             $isIPv6 = true;

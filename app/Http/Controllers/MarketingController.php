@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Components\Helpers;
@@ -52,7 +53,7 @@ class MarketingController extends Controller
     // 添加推送消息
     public function addPushMarketing(Request $request)
     {
-        $title = trim($request->get('title'));
+        $title   = trim($request->get('title'));
         $content = $request->get('content');
 
         if (!self::$systemConfig['is_push_bear']) {
@@ -61,7 +62,7 @@ class MarketingController extends Controller
 
         DB::beginTransaction();
         try {
-            $client = new Client();
+            $client   = new Client();
             $response = $client->request('GET', 'https://pushbear.ftqq.com/sub', [
                 'query' => [
                     'sendkey' => self::$systemConfig['push_bear_send_key'],
@@ -93,13 +94,13 @@ class MarketingController extends Controller
 
     private function addMarketing($type = 1, $title = '', $content = '', $status = 1, $error = '', $receiver = '')
     {
-        $marketing = new Marketing();
-        $marketing->type = $type;
+        $marketing           = new Marketing();
+        $marketing->type     = $type;
         $marketing->receiver = $receiver;
-        $marketing->title = $title;
-        $marketing->content = $content;
-        $marketing->error = $error;
-        $marketing->status = $status;
+        $marketing->title    = $title;
+        $marketing->content  = $content;
+        $marketing->error    = $error;
+        $marketing->status   = $status;
 
         return $marketing->save();
     }

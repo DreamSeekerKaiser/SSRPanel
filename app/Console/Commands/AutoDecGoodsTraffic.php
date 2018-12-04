@@ -30,7 +30,7 @@ class AutoDecGoodsTraffic extends Command
         // 扣减用户到期商品的流量
         $this->decGoodsTraffic();
 
-        $jobEndTime = microtime(true);
+        $jobEndTime  = microtime(true);
         $jobUsedTime = round(($jobEndTime - $jobStartTime), 4);
 
         Log::info('执行定时任务【' . $this->description . '】，耗时' . $jobUsedTime . '秒');
@@ -85,14 +85,14 @@ class AutoDecGoodsTraffic extends Command
                     UserLabel::query()->where('user_id', $order->user->id)->delete();
 
                     // 取出用户的其他商品带有的标签
-                    $goodsIds = Order::query()->where('user_id', $order->user->id)->where('oid', '<>', $order->oid)->where('status', 2)->where('is_expire', 0)->groupBy('goods_id')->pluck('goods_id')->toArray();
+                    $goodsIds    = Order::query()->where('user_id', $order->user->id)->where('oid', '<>', $order->oid)->where('status', 2)->where('is_expire', 0)->groupBy('goods_id')->pluck('goods_id')->toArray();
                     $goodsLabels = GoodsLabel::query()->whereIn('goods_id', $goodsIds)->groupBy('label_id')->pluck('label_id')->toArray();
 
                     // 生成标签
                     $labels = array_values(array_unique(array_merge($goodsLabels, $defaultLabels))); // 标签去重
                     foreach ($labels as $vo) {
-                        $userLabel = new UserLabel();
-                        $userLabel->user_id = $order->user->id;
+                        $userLabel           = new UserLabel();
+                        $userLabel->user_id  = $order->user->id;
                         $userLabel->label_id = $vo;
                         $userLabel->save();
                     }

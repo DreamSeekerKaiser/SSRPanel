@@ -33,19 +33,19 @@ class ShopController extends Controller
     public function addGoods(Request $request)
     {
         if ($request->method() == 'POST') {
-            $name = $request->get('name');
-            $desc = $request->get('desc', '');
-            $traffic = $request->get('traffic');
-            $price = $request->get('price', 0);
-            $score = intval($request->get('score', 0));
-            $type = intval($request->get('type', 1));
-            $days = intval($request->get('days', 90));
-            $color = trim($request->get('color', 0));
-            $sort = intval($request->get('sort', 0));
-            $is_hot = intval($request->get('is_hot', 0));
+            $name     = $request->get('name');
+            $desc     = $request->get('desc', '');
+            $traffic  = $request->get('traffic');
+            $price    = $request->get('price', 0);
+            $score    = intval($request->get('score', 0));
+            $type     = intval($request->get('type', 1));
+            $days     = intval($request->get('days', 90));
+            $color    = trim($request->get('color', 0));
+            $sort     = intval($request->get('sort', 0));
+            $is_hot   = intval($request->get('is_hot', 0));
             $is_limit = intval($request->get('is_limit', 0));
-            $labels = $request->get('labels');
-            $status = $request->get('status');
+            $labels   = $request->get('labels');
+            $status   = $request->get('status');
 
             if (empty($name) || empty($traffic)) {
                 Session::flash('errorMsg', '请填写完整');
@@ -77,7 +77,7 @@ class ShopController extends Controller
             // 商品LOGO
             $logo = '';
             if ($request->hasFile('logo')) {
-                $file = $request->file('logo');
+                $file     = $request->file('logo');
                 $fileType = $file->getClientOriginalExtension();
 
                 // 验证文件合法性
@@ -88,27 +88,27 @@ class ShopController extends Controller
                 }
 
                 $logoName = date('YmdHis') . mt_rand(1000, 2000) . '.' . $fileType;
-                $move = $file->move(base_path() . '/public/upload/image/goods/', $logoName);
-                $logo = $move ? '/upload/image/goods/' . $logoName : '';
+                $move     = $file->move(base_path() . '/public/upload/image/goods/', $logoName);
+                $logo     = $move ? '/upload/image/goods/' . $logoName : '';
             }
 
             DB::beginTransaction();
             try {
-                $goods = new Goods();
-                $goods->name = $name;
-                $goods->desc = $desc;
-                $goods->logo = $logo;
-                $goods->traffic = $traffic;
-                $goods->price = $price;
-                $goods->score = $score;
-                $goods->type = $type;
-                $goods->days = $days;
-                $goods->color = $color;
-                $goods->sort = $sort;
-                $goods->is_hot = $is_hot;
+                $goods           = new Goods();
+                $goods->name     = $name;
+                $goods->desc     = $desc;
+                $goods->logo     = $logo;
+                $goods->traffic  = $traffic;
+                $goods->price    = $price;
+                $goods->score    = $score;
+                $goods->type     = $type;
+                $goods->days     = $days;
+                $goods->color    = $color;
+                $goods->sort     = $sort;
+                $goods->is_hot   = $is_hot;
                 $goods->is_limit = $is_limit;
-                $goods->is_del = 0;
-                $goods->status = $status;
+                $goods->is_del   = 0;
+                $goods->status   = $status;
                 $goods->save();
 
                 // 生成SKU
@@ -118,7 +118,7 @@ class ShopController extends Controller
                 // 生成商品标签
                 if (!empty($labels)) {
                     foreach ($labels as $label) {
-                        $goodsLabel = new GoodsLabel();
+                        $goodsLabel           = new GoodsLabel();
                         $goodsLabel->goods_id = $goods->id;
                         $goodsLabel->label_id = $label;
                         $goodsLabel->save();
@@ -148,15 +148,15 @@ class ShopController extends Controller
         $id = $request->get('id');
 
         if ($request->method() == 'POST') {
-            $name = $request->get('name');
-            $desc = $request->get('desc');
-            $price = $request->get('price', 0);
-            $labels = $request->get('labels');
-            $color = trim($request->get('color', 0));
-            $sort = intval($request->get('sort', 0));
-            $is_hot = intval($request->get('is_hot', 0));
+            $name     = $request->get('name');
+            $desc     = $request->get('desc');
+            $price    = $request->get('price', 0);
+            $labels   = $request->get('labels');
+            $color    = trim($request->get('color', 0));
+            $sort     = intval($request->get('sort', 0));
+            $is_hot   = intval($request->get('is_hot', 0));
             $is_limit = intval($request->get('is_limit', 0));
-            $status = $request->get('status');
+            $status   = $request->get('status');
 
             $goods = Goods::query()->where('id', $id)->first();
             if (!$goods) {
@@ -181,7 +181,7 @@ class ShopController extends Controller
             // 商品LOGO
             $logo = '';
             if ($request->hasFile('logo')) {
-                $file = $request->file('logo');
+                $file     = $request->file('logo');
                 $fileType = $file->getClientOriginalExtension();
 
                 // 验证文件合法性
@@ -192,8 +192,8 @@ class ShopController extends Controller
                 }
 
                 $logoName = date('YmdHis') . mt_rand(1000, 2000) . '.' . $fileType;
-                $move = $file->move(base_path() . '/public/upload/image/goods/', $logoName);
-                $logo = $move ? '/upload/image/goods/' . $logoName : '';
+                $move     = $file->move(base_path() . '/public/upload/image/goods/', $logoName);
+                $logo     = $move ? '/upload/image/goods/' . $logoName : '';
             }
 
             DB::beginTransaction();
@@ -218,7 +218,7 @@ class ShopController extends Controller
                 // 生成商品标签
                 if (!empty($labels)) {
                     foreach ($labels as $label) {
-                        $goodsLabel = new GoodsLabel();
+                        $goodsLabel           = new GoodsLabel();
                         $goodsLabel->goods_id = $id;
                         $goodsLabel->label_id = $label;
                         $goodsLabel->save();
@@ -245,7 +245,7 @@ class ShopController extends Controller
                 $goods->labels = $label;
             }
 
-            $view['goods'] = $goods;
+            $view['goods']      = $goods;
             $view['label_list'] = Label::query()->orderBy('sort', 'desc')->orderBy('id', 'asc')->get();
 
             return Response::view('shop.editGoods', $view);

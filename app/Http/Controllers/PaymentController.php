@@ -35,7 +35,7 @@ class PaymentController extends Controller
     // 创建支付单
     public function create(Request $request)
     {
-        $goods_id = intval($request->get('goods_id'));
+        $goods_id  = intval($request->get('goods_id'));
         $coupon_sn = $request->get('coupon_sn');
 
         $goods = Goods::query()->where('is_del', 0)->where('status', 1)->where('id', $goods_id)->first();
@@ -114,24 +114,24 @@ class PaymentController extends Controller
         DB::beginTransaction();
         try {
             $orderSn = date('ymdHis') . mt_rand(100000, 999999);
-            $sn = makeRandStr(12);
+            $sn      = makeRandStr(12);
 
             // 生成订单
-            $order = new Order();
-            $order->order_sn = $orderSn;
-            $order->user_id = Auth::user()->id;
-            $order->goods_id = $goods_id;
-            $order->coupon_id = !empty($coupon) ? $coupon->id : 0;
+            $order                = new Order();
+            $order->order_sn      = $orderSn;
+            $order->user_id       = Auth::user()->id;
+            $order->goods_id      = $goods_id;
+            $order->coupon_id     = !empty($coupon) ? $coupon->id : 0;
             $order->origin_amount = $goods->price;
-            $order->amount = $amount;
-            $order->expire_at = date("Y-m-d H:i:s", strtotime("+" . $goods->days . " days"));
-            $order->is_expire = 0;
-            $order->pay_way = 2;
-            $order->status = 0;
+            $order->amount        = $amount;
+            $order->expire_at     = date("Y-m-d H:i:s", strtotime("+" . $goods->days . " days"));
+            $order->is_expire     = 0;
+            $order->pay_way       = 2;
+            $order->status        = 0;
             $order->save();
 
             // 生成支付单
-            $yzy = new Yzy();
+            $yzy    = new Yzy();
             $result = $yzy->createQrCode($goods->name, $amount * 100, $orderSn);
             if (isset($result['error_response'])) {
                 Log::error('【有赞云】创建二维码失败：' . $result['error_response']['msg']);
@@ -139,18 +139,18 @@ class PaymentController extends Controller
                 throw new \Exception($result['error_response']['msg']);
             }
 
-            $payment = new Payment();
-            $payment->sn = $sn;
-            $payment->user_id = Auth::user()->id;
-            $payment->oid = $order->oid;
-            $payment->order_sn = $orderSn;
-            $payment->pay_way = 1;
-            $payment->amount = $amount;
-            $payment->qr_id = $result['response']['qr_id'];
-            $payment->qr_url = $result['response']['qr_url'];
-            $payment->qr_code = $result['response']['qr_code'];
+            $payment               = new Payment();
+            $payment->sn           = $sn;
+            $payment->user_id      = Auth::user()->id;
+            $payment->oid          = $order->oid;
+            $payment->order_sn     = $orderSn;
+            $payment->pay_way      = 1;
+            $payment->amount       = $amount;
+            $payment->qr_id        = $result['response']['qr_id'];
+            $payment->qr_url       = $result['response']['qr_url'];
+            $payment->qr_code      = $result['response']['qr_code'];
             $payment->qr_local_url = $this->base64ImageSaver($result['response']['qr_code']);
-            $payment->status = 0;
+            $payment->status       = 0;
             $payment->save();
 
             // 优惠券置为已使用
@@ -194,9 +194,9 @@ class PaymentController extends Controller
             return Response::view('payment/' . $sn);
         }
 
-        $view['payment'] = $payment;
-        $view['website_logo'] = self::$systemConfig['website_logo'];
-        $view['website_analytics'] = self::$systemConfig['website_analytics'];
+        $view['payment']                  = $payment;
+        $view['website_logo']             = self::$systemConfig['website_logo'];
+        $view['website_analytics']        = self::$systemConfig['website_analytics'];
         $view['website_customer_service'] = self::$systemConfig['website_customer_service'];
 
         return Response::view('payment.detail', $view);

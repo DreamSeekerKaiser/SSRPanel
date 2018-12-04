@@ -50,7 +50,7 @@ class Controller extends BaseController
 
         $fp = fopen($file, "r+");
         assert($n > 0);
-        $pos = $n + 1;
+        $pos   = $n + 1;
         $lines = [];
         while (count($lines) <= $n) {
             try {
@@ -75,13 +75,13 @@ class Controller extends BaseController
     public function countLine($file)
     {
         $fp = fopen($file, "r");
-        $i = 0;
+        $i  = 0;
         while (!feof($fp)) {
             //每次读取2M
             if ($data = fread($fp, 1024 * 1024 * 2)) {
                 //计算读取到的行数
                 $num = substr_count($data, "\n");
-                $i += $num;
+                $i   += $num;
             }
         }
 
@@ -93,24 +93,24 @@ class Controller extends BaseController
     /**
      * 记录余额操作日志
      *
-     * @param int    $userId 用户ID
-     * @param string $oid    订单ID
-     * @param int    $before 记录前余额
-     * @param int    $after  记录后余额
-     * @param int    $amount 发生金额
-     * @param string $desc   描述
+     * @param int $userId 用户ID
+     * @param string $oid 订单ID
+     * @param int $before 记录前余额
+     * @param int $after 记录后余额
+     * @param int $amount 发生金额
+     * @param string $desc 描述
      *
      * @return int
      */
     public function addUserBalanceLog($userId, $oid, $before, $after, $amount, $desc = '')
     {
-        $log = new UserBalanceLog();
-        $log->user_id = $userId;
-        $log->order_id = $oid;
-        $log->before = $before;
-        $log->after = $after;
-        $log->amount = $amount;
-        $log->desc = $desc;
+        $log             = new UserBalanceLog();
+        $log->user_id    = $userId;
+        $log->order_id   = $oid;
+        $log->before     = $before;
+        $log->after      = $after;
+        $log->amount     = $amount;
+        $log->desc       = $desc;
         $log->created_at = date('Y-m-d H:i:s');
 
         return $log->save();
@@ -119,23 +119,23 @@ class Controller extends BaseController
     /**
      * 添加返利日志
      *
-     * @param int $userId    用户ID
+     * @param int $userId 用户ID
      * @param int $refUserId 返利用户ID
-     * @param int $oid       订单ID
-     * @param int $amount    发生金额
+     * @param int $oid 订单ID
+     * @param int $amount 发生金额
      * @param int $refAmount 返利金额
      *
      * @return int
      */
     public function addReferralLog($userId, $refUserId, $oid, $amount, $refAmount)
     {
-        $log = new ReferralLog();
-        $log->user_id = $userId;
+        $log              = new ReferralLog();
+        $log->user_id     = $userId;
         $log->ref_user_id = $refUserId;
-        $log->order_id = $oid;
-        $log->amount = $amount;
-        $log->ref_amount = $refAmount;
-        $log->status = 0;
+        $log->order_id    = $oid;
+        $log->amount      = $amount;
+        $log->ref_amount  = $refAmount;
+        $log->status      = 0;
 
         return $log->save();
     }
@@ -143,22 +143,22 @@ class Controller extends BaseController
     /**
      * 添加积分日志
      *
-     * @param int    $userId 用户ID
-     * @param int    $before 记录前余额
-     * @param int    $after  记录后余额
-     * @param int    $score  发生值
-     * @param string $desc   描述
+     * @param int $userId 用户ID
+     * @param int $before 记录前余额
+     * @param int $after 记录后余额
+     * @param int $score 发生值
+     * @param string $desc 描述
      *
      * @return int
      */
     public function addUserScoreLog($userId, $before, $after, $score, $desc = '')
     {
-        $log = new UserScoreLog();
-        $log->user_id = $userId;
-        $log->before = $before;
-        $log->after = $after;
-        $log->score = $score;
-        $log->desc = $desc;
+        $log             = new UserScoreLog();
+        $log->user_id    = $userId;
+        $log->before     = $before;
+        $log->after      = $after;
+        $log->score      = $score;
+        $log->desc       = $desc;
         $log->created_at = date('Y-m-d H:i:s');
 
         return $log->save();
@@ -178,7 +178,7 @@ class Controller extends BaseController
             $type = $result[2];
 
             $directory = date('Ymd');
-            $path = '/assets/images/qrcode/' . $directory . '/';
+            $path      = '/assets/images/qrcode/' . $directory . '/';
             if (!file_exists(public_path($path))) { // 检查是否有该文件夹，如果没有就创建，并给予最高权限
                 mkdir(public_path($path), 0755, true);
             }

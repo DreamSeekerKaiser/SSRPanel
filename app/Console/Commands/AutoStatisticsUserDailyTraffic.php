@@ -35,7 +35,7 @@ class AutoStatisticsUserDailyTraffic extends Command
             }
         }
 
-        $jobEndTime = microtime(true);
+        $jobEndTime  = microtime(true);
         $jobUsedTime = round(($jobEndTime - $jobStartTime), 4);
 
         Log::info('执行定时任务【' . $this->description . '】，耗时' . $jobUsedTime . '秒');
@@ -44,7 +44,7 @@ class AutoStatisticsUserDailyTraffic extends Command
     private function statisticsByNode($user_id, $node_id = 0)
     {
         $start_time = strtotime(date('Y-m-d 00:00:00', strtotime("-1 day")));
-        $end_time = strtotime(date('Y-m-d 23:59:59', strtotime("-1 day")));
+        $end_time   = strtotime(date('Y-m-d 23:59:59', strtotime("-1 day")));
 
         $query = UserTrafficLog::query()->where('user_id', $user_id)->whereBetween('log_time', [$start_time, $end_time]);
 
@@ -52,17 +52,17 @@ class AutoStatisticsUserDailyTraffic extends Command
             $query->where('node_id', $node_id);
         }
 
-        $u = $query->sum('u');
-        $d = $query->sum('d');
-        $total = $u + $d;
+        $u       = $query->sum('u');
+        $d       = $query->sum('d');
+        $total   = $u + $d;
         $traffic = flowAutoShow($total);
 
-        $obj = new UserTrafficDaily();
+        $obj          = new UserTrafficDaily();
         $obj->user_id = $user_id;
         $obj->node_id = $node_id;
-        $obj->u = $u;
-        $obj->d = $d;
-        $obj->total = $total;
+        $obj->u       = $u;
+        $obj->d       = $d;
+        $obj->total   = $total;
         $obj->traffic = $traffic;
         $obj->save();
     }

@@ -14,7 +14,7 @@ class Yzy
     function __construct()
     {
         self::$systemConfig = Helpers::systemConfig();
-        self::$accessToken = $this->getAccessToken();
+        self::$accessToken  = $this->getAccessToken();
     }
 
     // 获取accessToken
